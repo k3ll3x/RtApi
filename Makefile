@@ -1,19 +1,11 @@
 INC=-I/src/include
-# LIBS=-lGLESv2 -lEGL -lm -lX11
 LIBS=-lGLEW -lglfw -lGL -lm -lX11 -std=c++17
-# LIBS=-lGLESv2 -lglfw -lEGL -lm -lX11
-# LIBS=-lGL -lGLU -lglut
-# FLAGS=-s WASM=1 -s LEGACY_GL_EMULATION=1 -s EXPORT_ALL=1 -s OFFSCREEN_FRAMEBUFFER=1
-# -s USE_WEBGL2=1
-FLAGS=-D__EMSCRIPTEN__ -DEMSCRIPTEN -s WASM=1 -s EXPORT_ALL=1 -s OFFSCREEN_FRAMEBUFFER=1 -s ASSERTIONS=1 -s USE_GLFW=3
+FLAGS=-D__EMSCRIPTEN__ -s WASM=1 -s MAX_WEBGL_VERSION=2 -s MIN_WEBGL_VERSION=2 -s EXPORT_ALL=1 -s OFFSCREEN_FRAMEBUFFER=1 -s ASSERTIONS=1 -s USE_WEBGL2=1 -s USE_GLFW=3
 all:
 	mkdir -p generated
 	mkdir -p build
 	cp index.html build/
 	emcc -lembind -o /src/build/out.js /src/src/main.cc $(INC) $(LIBS) $(FLAGS)
-	# emcc -lembind -o /src/build/out.js /src/src/main.cc /src/src/esUtil.c $(INC) $(LIBS) $(FLAGS)
-	# emcc /src/src/main.cc $(LIBS) $(FLAGS) -O3 -o /src/build/out.js
-	# echo fuck
 nat:
 	g++ /src/src/main.cc $(INC) $(LIBS) -o /src/build/native.out
 clean:

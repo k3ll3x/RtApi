@@ -1,6 +1,9 @@
 FROM debian:latest
 
-# SHELL ["/bin/bash", "-c"] 
+ARG username="devu"
+ARG userhome="/home/devu"
+
+ENV HOME ${userhome}
 
 RUN apt update
 RUN apt upgrade -y
@@ -20,6 +23,7 @@ RUN apt install -y \
 RUN apt install -y \
 	git nano \
 	openssh-server \
+	sudo \
 	tmux \
 	firefox-esr \
 	xonsh \
@@ -57,17 +61,20 @@ RUN ./emsdk activate latest
 # Activate PATH and other environment variables in the current terminal
 # RUN bash ./emsdk_env.sh
 
+# User
+RUN groupadd -r ${username}
+RUN useradd -rm -d ${userhome} -s /usr/bin/xonsh -g ${username} -u 1000 ${username}
+RUN adduser ${username} sudo
+RUN chown -R ${username}:${username} ${userhome}
+RUN echo ${username}:${username} | chpasswd
+
 WORKDIR /src
 
 RUN service ssh start
-EXPOSE 22
 CMD ["/usr/sbin/sshd","-D"]
+EXPOSE 22
 
-# SHELL ["xonsh"]
+USER ${username}
 
-#ENTRYPOINT ["/bin/bash", "-c"]
-# ENTRYPOINT ["/bin/bash", "/emsdk/emsdk_env.sh", "&", "xonsh"]
 CMD ["/bin/bash", "-c", "source", "/emsdk/emsdk_env.sh"]
-# ENTRYPOINT ["/bin/bash", "-c"]
 ENTRYPOINT ["/usr/bin/xonsh", "-c"]
-#CMD ["/bin/bash"]

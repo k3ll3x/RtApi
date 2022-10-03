@@ -4,10 +4,11 @@
 
 from create_tree import *
 sub = {
-    'operator \*': '__mul',
+    'operator [*][=]': '__mul',
+    'operator [+][=]': '__add',
+    'operator [-][=]': '__sub',
     'operator [=][=]': '__eq',
-    'operator \+': '__add',
-    'operator \-': '__sub',
+    'operator /[=]': '__div',
     'operator \[\]': '__newindex',
 }
 
@@ -19,7 +20,7 @@ rb = "-]"
 htemplate = """
 #include "LAakTable.h"
 
-class {classname} {lb}
+class Meta{classname} {lb}
 private:
     static std::map<std::string, const std::string> docs = {lb}
 {docs}
@@ -56,16 +57,12 @@ private:
     static const luaL_Reg functions[] = {lb}
 {lfunctions}
         {lb} "__gc", free {rb},
-        //{lb} "__add", add {rb},
-        //{lb} "__sub", sub {rb},
-        //{lb} "__mul", mul {rb},
-        //{lb} "__eq", eq {rb},
         {lb} "__tostring", tostring {rb},
         {lb} nullptr, nullptr {rb}
     {rb};
 public:
-    {classname}() = delete;
-    ~{classname}() = delete;
+    Meta{classname}() = delete;
+    ~Meta{classname}() = delete;
     static std::string name = "{classname}";
     void reg(lua_State* L){lb}
         LAakTable::register_table(L, name.c_str(), methods, functions);
@@ -74,14 +71,14 @@ public:
 """
 
 impfunctmplt = """
-int {classname}::{function}(lua_State* L){lb}
+int Meta{classname}::{function}(lua_State* L){lb}
 {rtntype}
     return 1;
 {rb}
 """
 
 cctemplate = """
-#include "{classname}.h"
+#include "Meta{classname}.h"
 
 {functions}
 """
@@ -106,10 +103,12 @@ for c in classes:
     lfunctmplt = {}
     _rtntype = {}
     for index, row in ndf[ndf['K'] == 'function'].iterrows():
-        functionstmplt[row['N']] = row['N'] if row['t'] != '-' else '_new'
+        fname = row['N'] if row['t'] != '-' else '__new'
+        functionstmplt[row['N']] = fname
+        # functionstmplt[fname] = fname
         _impfunctmplt[row['N']] = impfunctmplt.format(
             classname=c,
-            function=row['N'] if row['t'] != '-' else '_new',
+            function=fname,
             rtntype="$RTNTYPE$",
             rb=rb, lb=lb
         )
@@ -120,15 +119,9 @@ for c in classes:
         except:
             _rtntype[row['N']] = _rtntypetmplt.format(row['t'],row['N'],row['S']) if row['t'] != '-' else _rtntypetmplt_.format(row['N'], row['S'])
         _docstmpt = "\t\t{lb}\t{0},\t\t{1} {rb},\n"
-        try:
-            docstmpt[row['N']] += _docstmpt.format(row['N'], '""', rb=rb, lb=lb)
-        except:
-            docstmpt[row['N']] = _docstmpt.format(row['N'], '""', rb=rb, lb=lb)
+        docstmpt[row['N']] = _docstmpt.format(fname, '""', rb=rb, lb=lb)
         _lfunctmplt_ = '\t\t{lb}\t"{0}",\t\t{0} {rb},\n'
-        try:
-            lfunctmplt[row['N']] += _lfunctmplt_.format(row['N'], rb=rb, lb=lb)
-        except:
-            lfunctmplt[row['N']] = _lfunctmplt_.format(row['N'], rb=rb, lb=lb)
+        lfunctmplt[row['N']] = _lfunctmplt_.format(fname, rb=rb, lb=lb)
 
     _functionstmplt = ""
     _impfunc = ""
@@ -136,21 +129,21 @@ for c in classes:
     _lfunctmplt = ""
     for i in functionstmplt:
         _impfunc += _impfunctmplt[i].replace("$RTNTYPE$", _rtntype[i] + "$RTNTYPE$")
-        _functionstmplt += "\tstatic int {0}(lua_State* L);\n".format(i)
+        _functionstmplt += "\tstatic int {0}(lua_State* L);\n".format(functionstmplt[i])
         _docstmplt += docstmpt[i]
-        _lfunctmplt = lfunctmplt[i]
+        _lfunctmplt += lfunctmplt[i]
     _impfunc = _impfunc.replace("$RTNTYPE$","")
 
     tmplt = htemplate.format(classname=c, functions=_functionstmplt, docs=_docstmplt, lfunctions=_lfunctmplt, lmethods="", rb=rb, lb=lb).replace(lb,'{').replace(rb,'}')
 
-    _fname = "{0}/{1}.h".format(gen_path,c)
+    _fname = "{0}/Meta{1}.h".format(gen_path,c)
     f = open(_fname,"w")
     f.write(tmplt)
     f.close()
 
     tmplt = cctemplate.format(classname=c, functions=_impfunc, rb=rb, lb=lb).replace(lb,'{').replace(rb,'}')
 
-    _fname = "{0}/{1}.cc".format(gen_path,c)
+    _fname = "{0}/Meta{1}.cc".format(gen_path,c)
     f = open(_fname,"w")
     f.write(tmplt)
     f.close()

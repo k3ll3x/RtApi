@@ -19,6 +19,7 @@ rb = "-]"
 
 htemplate = """
 #include "LAakTable.h"
+#include "{classname}.h"
 
 class Meta{classname} {lb}
 private:

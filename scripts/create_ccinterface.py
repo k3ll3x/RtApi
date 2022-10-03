@@ -1,66 +1,59 @@
 #!/usr/bin/python3
 
-# Script meant to be used in Docker container
-
 from create_tree import *
 
+cctemplate = """
+class {classname} [
+    //members
+{members}
 
-# Emscripten template
-f = open(tmplts_path + "/emcClass.h")
-ctmplt = f.read()
-f.close()
+    //functions
+{functions}
+];
+"""
 
-#get template functions
-ctmplt = re.sub("//(.*)\n", "", ctmplt)
-class_tmplt = re.findall(r"@(.*)@", ctmplt, flags=re.DOTALL)[-1]
-ctmplt =  re.sub(r"@(.*)@", "$MODULES", ctmplt, flags=re.DOTALL)
+# for each class
+classes = []
+try:
+    classes = tree[tree['K'].isin(['class','struct'])]['N'].unique()
+except:
+    # Create namespace functions, if namespace is ""  create name
+    print("No classes or structs here m8")
+    sys.exit(-1)
 
-for i in modules.keys():
-	constructors = ""
-	functions = ""
+for c in classes:
+    # ndf = tree[tree['Z'].str.contains(c, na=False)]
+    ndf = tree[tree['Z'] == c]
+    
+    # members
+    memberstmplt = ""
+    for index, row in ndf[ndf['K'] == 'member'].iterrows():
+        memberstmplt += "\t{0}{1} {2};\n".format(
+            row['a'] + ':\t' if row['a'] != '-' else '',
+            row['t'], row['N']
+        )
 
-	if i != '':
-		tmp_class_tmplt = class_tmplt.replace("$CNAME", i)
+    # functions
+    functionstmplt = ""
+    for index, row in ndf[ndf['K'] == 'function'].iterrows():
+        functionstmplt += "\t{0}{1}{2}({3});\n".format(
+            row['a'] + ':\t' if row['a'] != '-' else '',
+            row['t'] + ' ' if row['t'] != '-' else '',
+            row['N'],
+            row['S']
+        )
+    
+    # tmplt = ""
+    # try:
+    tmplt = cctemplate.format(classname=c, members=memberstmplt, functions=functionstmplt).replace('[','{').replace(']','}')
+    # tmplt = cctemplate.format(classname="c", members="memberstmplt", functions="functionstmplt")
+    # except:
+    #     continue
+        # print(c)
+    #     print(memberstmplt)
+    #     print(functionstmplt)    
 
-		c = {}
-		cmdl = ["$CONST", "$FUNCS"]
-		for v in cmdl:
-			c[v] = re.findall("\{0}(.*)?\n".format(v), tmp_class_tmplt)[-1].replace(v,'')
-			tmp_class_tmplt = re.sub("\{0}(.*)?\n".format(v), v + '\n', tmp_class_tmplt)
-
-		# print(c)
-		for j in modules[i].keys():
-			if j == "function":
-				for j in modules[i]['function'].keys():
-					# constructors
-					if isinstance(j, int):
-						for k in modules[i]['function'][j].keys():
-							if '~' not in k:
-								constructors += c['$CONST'].replace("$ARGSC", modules[i]['function'][j][k]) + "\n\t"
-					# Function
-					else:
-						for k in modules[i]['function'][j].keys():
-							if 'operator' not in k:
-								functions += c['$FUNCS'].replace("$FNAME", k) + "\n\t"
-		
-		tmp_class_tmplt = tmp_class_tmplt.replace("$CONST", constructors)
-		tmp_class_tmplt = tmp_class_tmplt.replace("$FUNCS", functions)
-		if constructors != '':
-			classes += tmp_class_tmplt
-
-print(ctmplt.replace("$MODULES",classes))
-
-# print(txt)
-# ch = input(">")
-# while(ch != "quit"):
-# 	eval(ch)
-# 	ch = input(">")
-
-# if '/' in filename:
-# 	filename = filename.split('/')[-1]
-# filename = gen_path + "/" + filename
-# f = open(filename, "w")
-# f.write(txt)
-# f.close()
-
-# os.popen("cat {0} | uniq > tmpf && mv tmpf {0}".format(filename)).read()
+    _fname = "{0}/{1}.h".format(gen_path,c)
+    f = open(_fname,"w")
+    f.write(tmplt)
+    f.close()

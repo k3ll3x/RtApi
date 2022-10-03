@@ -72,7 +72,8 @@ f = open(gen_path + "/atr." + ufilename + ".json", "w")
 f.write(json.dumps(raw_modules, indent=4))
 f.close()
 
-df['t'] = df['t'].apply(lambda x: re.sub("typename:","",x))
+# df['t'] = df['t'].apply(lambda x: re.sub("typename:","",x))
+df['t'] = df['t'].str.replace("typename:","", regex=True)
 df['S'] = df['S'].apply(cleanf_args)
 
 df = df[df['N'] != "class"]
@@ -88,4 +89,7 @@ dffile = gen_path + "/df." + ufilename + ".xls"
 if os.path.exists(dffile):
     ndf = pd.read_excel(dffile)
     tree = pd.concat([tree, ndf], ignore_index=True)[columns]
+
+#remove in Z (Scope) extra namespace
+tree = tree.replace(np.nan, '', regex=True)
 tree.to_excel(dffile, engine="openpyxl")

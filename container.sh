@@ -16,7 +16,7 @@ if [[ "$1" == "run" ]]
 then
 	xhost +
 	docker run -it \
-		-v $(pwd):/src \
+		-v $(pwd):/home/devu/repo \
 		-v /tmp/.X11-unix:/tmp/.X11-unix \
 		-v $HOME/.ssh:/root/.ssh \
 		-e DISPLAY=:0 \
@@ -24,7 +24,7 @@ then
 		--device /dev/snd \
 		--net=host \
 		$contname \
-		"bash ./scripts/set.sh"
+		"bash /home/devu/repo/scripts/set.sh"
 else
 	docker build -t $contname .
 fi

@@ -34,6 +34,7 @@ private:
     T y;
 };
 
+template<class T>
 T* Type::ptr(T t){
     return &t;
 }

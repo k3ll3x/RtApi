@@ -11,22 +11,26 @@ RUN apt update
 
 RUN apt install -y \
 	python3 python3-pip cmake \
-	build-essential libpng-dev libglu1-mesa-dev libx11-dev libpthread-stubs0-dev \
+	openssh-server \
+	build-essential \
+	libpthread-stubs0-dev \
 	autoconf automake pkg-config
 
+# Computer Graphics - OpenGL
 RUN apt install -y \
+	libpng-dev libglu1-mesa-dev libx11-dev \
 	libglfw3-dev \
 	libglew-dev \
 	libgles2-mesa-dev \
 	freeglut3-dev
 
+#Misc
 RUN apt install -y \
 	git nano \
-	openssh-server \
 	sudo \
 	tmux \
+	fish \
 	firefox-esr \
-	xonsh \
 	libreoffice \
 	sonic-visualiser
 
@@ -63,18 +67,20 @@ RUN ./emsdk activate latest
 
 # User
 RUN groupadd -r ${username}
-RUN useradd -rm -d ${userhome} -s /usr/bin/xonsh -g ${username} -u 1000 ${username}
+RUN useradd -rm -d ${userhome} -s /usr/bin/fish -g ${username} -u 1000 ${username}
 RUN adduser ${username} sudo
 RUN chown -R ${username}:${username} ${userhome}
 RUN echo ${username}:${username} | chpasswd
 
-WORKDIR /src
+WORKDIR ${userhome}/repo
 
 RUN service ssh start
 CMD ["/usr/sbin/sshd","-D"]
 EXPOSE 22
 
 USER ${username}
+ENV fish_greeting="Alle Anfang ist schwer, anfangen ist Einfach, Beharrlichkeit eine Kunst."
+RUN echo "bash $HOME/repo/scripts/set.sh" >> ${userhome}/.bashrc
 
 CMD ["/bin/bash", "-c", "source", "/emsdk/emsdk_env.sh"]
-ENTRYPOINT ["/usr/bin/xonsh", "-c"]
+ENTRYPOINT ["/usr/bin/fish", "-c"]

@@ -4,6 +4,7 @@
 
 class ifile {
 public:
+    ifile(){}
     ifile(const std::string& filename){
         read(filename);
     }

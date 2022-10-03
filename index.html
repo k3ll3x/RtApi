@@ -6,6 +6,14 @@
   <body>
     <canvas id="canvas" width="100%" height="100%" oncontextmenu="event.preventDefault()"></canvas>
     <script type="text/javascript">
+      Tetra = {};
+      WebAssembly.instantiateStreaming(fetch("out.wasm"), Tetra).then(
+        (obj) => {
+          Tetra = obj;
+          console.log(obj);
+        }
+      );
+
       var canvas = document.getElementById("canvas");
       Module.canvas = canvas;
       window.addEventListener('resize', resizeCanvas, false);

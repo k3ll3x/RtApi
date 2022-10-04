@@ -9,6 +9,10 @@ namespace cgmath {
 		float y;
 		float z;
 
+		constexpr uint dim(){
+			return 3;
+		}
+
 		//constructors
 		vec3();
 		vec3(float x, float y, float z);

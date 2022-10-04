@@ -7,6 +7,10 @@ namespace cgmath {
 		float x;
 		float y;
 
+		constexpr uint dim(){
+			return 2;
+		}
+
 		//constructors
 		vec2();
 		vec2(float x,float y);

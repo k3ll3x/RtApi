@@ -12,6 +12,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "vec3.h"
+#include "utils.h"
 
 // #include "linmath.h"
 #include "ifile.h"
@@ -66,7 +67,9 @@ public:
 
 class Scene {
 public:	
-	// virtual ~Scene() = 0;
+	~Scene(){
+        glDeleteProgram(shader_program);
+    }
 	virtual void init() = 0;
 	virtual void awake() = 0;
 	virtual void sleep() = 0;
@@ -79,9 +82,17 @@ public:
 
     GLuint shader_program;
     GLint primitiveType;
-    static inline GLenum primitiveTypes[] = {GL_POINTS, GL_LINE_STRIP, GL_LINE_LOOP, GL_LINES, GL_LINE_STRIP_ADJACENCY, GL_LINES_ADJACENCY, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN, GL_TRIANGLES, GL_TRIANGLE_STRIP_ADJACENCY, GL_TRIANGLES_ADJACENCY };
+    static inline std::vector<GLenum> primitiveTypes = {GL_POINTS, GL_LINE_STRIP, GL_LINE_LOOP, GL_LINES, GL_LINE_STRIP_ADJACENCY, GL_LINES_ADJACENCY, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN, GL_TRIANGLES, GL_TRIANGLE_STRIP_ADJACENCY, GL_TRIANGLES_ADJACENCY };
 
-    static void loadVertex(std::vector<cgmath::vec2> &positions, int i, GLuint* vao, GLuint* positionsVBO) {
+    GLFWwindow* window;
+
+    cgmath::vec2 get_window_size(){
+        int width, height;
+        glfwGetWindowSize(window, &width, &height);
+        return cgmath::vec2(width, height);
+    }
+
+    static void loadVertex(std::vector<cgmath::vec2> &positions, int i, GLuint vao[], GLuint positionsVBO[]) {
         //glGenVertexArrays(vaoSize, &vao[i]);
         glGenVertexArrays(1, &vao[i]);
         glBindVertexArray(vao[i]);
@@ -100,7 +111,6 @@ public:
 		for(int i = 0; i < shaders.size(); i++){
 		    std::vector<GLchar> log;
 			//load shader and compile
-            shaders[i].text += "\n\n\0";
 			const GLchar* source = (const GLchar*)shaders[i].text.c_str();
 			shader[i] = glCreateShader(shaders[i].type);
 			glShaderSource(shader[i], 1, &source, nullptr);
@@ -125,8 +135,6 @@ public:
 		shader_program = glCreateProgram();
 		for(int i = 0; i < shaders.size(); i++){
 			glAttachShader(shader_program, shader[i]);
-		}
-		for(int i = 0; i < shaders.size(); i++){
 			glBindAttribLocation(shader_program, i, shaders[i].name.c_str());
 		}
 		glLinkProgram(shader_program);
@@ -161,7 +169,7 @@ class SceneStart : public Scene {
         vertex = shvertex.get_contents();
 
         ifile shfragment;
-        shfragment.read("../shaders/solid_color.frag");
+        shfragment.read("../shaders/solid.frag");
         // std::string fragment = shfragment.get_contents();
         fragment = shfragment.get_contents();
 
@@ -278,9 +286,10 @@ class SceneStart : public Scene {
 class SceneConchoid : public Scene {
     static const int vaoSize = 300;
 	GLuint vao[vaoSize];
-	GLuint _positionsVBO[vaoSize];
-	GLenum primitiveType;
+	GLuint vbo[vaoSize];
+	// GLenum primitiveType;
 	GLuint positionsSize[vaoSize];
+    uint primitiveTypeInx = 0;
 
 	cgmath::vec2 getConcoidUp(cgmath::vec2 p, cgmath::vec2 &o, float k) {
         cgmath::vec2 d = k * d.normalize(o - p);
@@ -299,7 +308,10 @@ class SceneConchoid : public Scene {
         float interval = 0.01f;
         float wsize = 2.0f;
 
-        float range = 1.0f / 1600;
+        float range = 1.0f / 16;
+
+        primitiveType = GL_LINE_STRIP;
+        // primitiveType = GL_POINT;
 
         for (int j = 0; j < vaoSize; j++) {
             if (j % 2 == 0) {
@@ -312,7 +324,7 @@ class SceneConchoid : public Scene {
                 }
 
                 positionsSize[j] = positionsUp.size();
-                loadVertex(positionsUp, j, vao, _positionsVBO);
+                loadVertex(positionsUp, j, vao, vbo);
             }
             else {
                 std::vector<cgmath::vec2> positionsDown;
@@ -324,18 +336,28 @@ class SceneConchoid : public Scene {
                 }
 
                 positionsSize[j] = positionsDown.size();
-                loadVertex(positionsDown, j, vao, _positionsVBO);
+                loadVertex(positionsDown, j, vao, vbo);
                 k += 0.1f;
             }
         }
 
-        primitiveType = GL_LINE_STRIP;
-        // primitiveType = GL_POINT;
+        ifile shvertex;
+        shvertex.read("../shaders/solid.vert");
+        std::string vertex = shvertex.get_contents();
+
+        ifile shfragment;
+        shfragment.read("../shaders/solid.frag");
+        std::string fragment = shfragment.get_contents();
+
+        std::vector<Shader> shaders;
+        shaders.push_back({"position", vertex, GL_VERTEX_SHADER});
+        shaders.push_back({"colors", fragment, GL_FRAGMENT_SHADER});
+	    setupShaders(shaders);
     }
 
     void awake() {
-        glClearColor(1.0f, 0.5f, 0.5f, 1.0f);
-        glPointSize(1.0f);
+        glClearColor(0.33, 0.5, 0.5, 1.0);
+        glPointSize(2.0f);
     }
 
     void sleep() {
@@ -344,23 +366,28 @@ class SceneConchoid : public Scene {
 
     void mainLoop() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        for (int i = 0; i < vaoSize; i++) {
-            glBindVertexArray(vao[i]);
-            glDrawArrays(primitiveType, 0, positionsSize[i]);
-            glBindVertexArray(vao[i]);
-        }
+        // for (int i = 0; i < vaoSize; i++) {
+        // glBindVertexArray(0);
+        glDrawArrays(primitiveType, 0, vaoSize);
+            // glBindVertexArray(vao[i]);
+            // std::this_thread::sleep_for(std::chrono::microseconds(3000));
+        // }
     }
 
     void reset(){}
     void error_callback(int error, const char* desc){}
     void cursor_position_callback(double xpos, double ypos){}
     void mouse_button_callback(int button, int action, int mods){}
-    void key_callback(int key, int scancode, int action, int mods){}
+    void key_callback(int key, int scancode, int action, int mods){
+        primitiveTypeInx = (primitiveTypeInx + 1)%primitiveTypes.size();
+        primitiveType = primitiveTypes[primitiveTypeInx];
+    }
 };
 
 class SceneSphere : public Scene {
     float gypos, gxpos, div = 33.131f;
     int np = 1030;
+    float psz = 10.0;
     GLint primitiveType = GL_POINTS;
     void key_callback(int key, int scancode, int action, int mods){
         if(key == 'A')div += 1.323;
@@ -409,10 +436,18 @@ class SceneSphere : public Scene {
     }
     void error_callback(int error, const char* desc){};
 	void cursor_position_callback(double xpos, double ypos){
-        gypos = ypos;
-        gxpos = xpos;
+        auto wsize = get_window_size();
+        gypos = cgmath::utils::map(ypos,0,wsize.x,-1.0,1.0);
+        gxpos = cgmath::utils::map(xpos,0,wsize.y,-1.0,1.0);;
     };
-    void mouse_button_callback(int button, int action, int mods){};
+    void mouse_button_callback(int button, int action, int mods){
+        if(button == GLFW_MOUSE_BUTTON_RIGHT){
+            psz += 1.2;
+        }
+        if(button == GLFW_MOUSE_BUTTON_LEFT){
+            psz -= 1.2;
+        }
+    };
     ~SceneSphere()
     {
         //Delete executable from memory when scene fades,.
@@ -426,7 +461,7 @@ class SceneSphere : public Scene {
         std::string vertex = shvertex.get_contents();
 
         ifile shfragment;
-        shfragment.read("../shaders/solid_color.frag");
+        shfragment.read("../shaders/solid.frag");
         std::string fragment = shfragment.get_contents();
 
         std::vector<Shader> shaders;
@@ -464,6 +499,8 @@ class SceneSphere : public Scene {
         glUniform1f(_ypos, gypos);
         GLuint _div = glGetUniformLocation(shader_program, "div");
         glUniform1f(_div, div);
+        GLuint _psz = glGetUniformLocation(shader_program, "psz");
+        glUniform1f(_psz, psz);
         glDrawArrays(primitiveType, 0, np);
         double r = magic_rgb(std::sin(tcount));
         double g = magic_rgb(std::cos(tcount));
@@ -567,7 +604,6 @@ private:
     inline static std::vector<std::unique_ptr<Scene>> sceneList;
     inline static int currentScene = -1;
     inline static int width, height;
-    inline static double mxpos, mypos;
 private:
     inline static void error_callback(int error, const char *description){
         fprintf(stderr, "Error: %s\n", description);
@@ -642,6 +678,7 @@ private:
 
         for (auto& s : sceneList){
             s->init();
+            s->window = window;
         }
 
 

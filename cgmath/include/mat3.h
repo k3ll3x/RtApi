@@ -14,6 +14,10 @@ namespace cgmath {
 		mat3(float diagonal);
 		mat3(const vec3& a, const vec3& b, const vec3& c);
 
+		constexpr uint dim(){
+			return SIZEM3*SIZEM3;
+		}
+
 		//operators
 		vec3& operator[](int column);
 		const vec3& operator[](int column) const;

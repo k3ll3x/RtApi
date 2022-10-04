@@ -10,6 +10,10 @@ namespace cgmath {
 		float z;
 		float w;
 
+		constexpr uint dim(){
+			return 4;
+		}
+
 		//constructors
 		vec4();
 		vec4(float x, float y, float z, float w);

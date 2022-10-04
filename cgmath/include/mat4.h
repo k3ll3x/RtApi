@@ -16,6 +16,10 @@ namespace cgmath {
 		mat4(float diagonal);
 		mat4(const vec4& a, const vec4& b, const vec4& c, const vec4& d);
 
+		constexpr uint dim(){
+			return SIZEM4*SIZEM4;
+		}
+
 		//operators
 		vec4& operator[](int column);
 		const vec4& operator[](int column) const;

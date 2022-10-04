@@ -141,23 +141,13 @@ class SceneStart : public Scene {
 	float psize = 22.0;
 	float pwidth = 33.0f;
 
-    uint py = 0.1;
+    float py = 0.1;
 
     uint16_t points = 666;
 
     std::string vertex = "";
 
-    GLint primitiveType;
-
-    std::string fragment =
-        "#version 330\n"
-        "precision highp float;\n"
-        "out vec4 FragColor;\n"
-        "in vec4 InterpolatedColor;\n"
-        "void main(){\n"
-        "    FragColor = InterpolatedColor;\n"
-        "}\n"
-        "";
+    std::string fragment;
 
 	//destructors
 	~SceneStart(){
@@ -245,6 +235,7 @@ class SceneStart : public Scene {
     void cursor_position_callback(double xpos, double ypos){
         psize = xpos;
         pwidth = ypos/mul;
+        py = std::sin(xpos * ypos);
     }
     void mouse_button_callback(int button, int action, int mods){
         printf("%d\t%d\t%d\n", button, action, mods);
@@ -300,7 +291,6 @@ class SceneConchoid : public Scene {
         cgmath::vec2 d = k * d.normalize(o - p);
         return p + d;
     }
-
     void init() {
         //getpoints
         float k = 0.1f;
@@ -339,8 +329,8 @@ class SceneConchoid : public Scene {
             }
         }
 
-        // primitiveType = GL_LINE_STRIP;
-        primitiveType = GL_POINT;
+        primitiveType = GL_LINE_STRIP;
+        // primitiveType = GL_POINT;
     }
 
     void awake() {
@@ -365,8 +355,18 @@ class SceneConchoid : public Scene {
     void error_callback(int error, const char* desc){}
     void cursor_position_callback(double xpos, double ypos){}
     void mouse_button_callback(int button, int action, int mods){}
+    void key_callback(int key, int scancode, int action, int mods){}
+};
 
+class SceneSphere : public Scene {
+    float gypos, gxpos, div = 33.131f;
+    int np = 1030;
+    GLint primitiveType = GL_POINTS;
     void key_callback(int key, int scancode, int action, int mods){
+        if(key == 'A')div += 1.323;
+        if(key == 'S')div -= 1.323;
+        if(key == 'Q')np += 33;
+        if(key == 'W')np -= 33;
         if (key == '1') {
             primitiveType = primitiveTypes[0];
         }
@@ -407,18 +407,8 @@ class SceneConchoid : public Scene {
             primitiveType = primitiveTypes[9];
         }
     }
-};
-
-class SceneSphere : public Scene {
-    float gypos, gxpos;
     void error_callback(int error, const char* desc){};
-	void key_callback(int key, int scancode, int action, int mods){
-        std::string str = "" + (char)key;
-        auto n = (atoi(str.c_str()) - 1)%10;
-        primitiveType = primitiveTypes[n];
-
-    };
-    void cursor_position_callback(double xpos, double ypos){
+	void cursor_position_callback(double xpos, double ypos){
         gypos = ypos;
         gxpos = xpos;
     };
@@ -457,17 +447,29 @@ class SceneSphere : public Scene {
         glDisable(GL_PROGRAM_POINT_SIZE);
     }
 
+    double magic_rgb(double seed){
+        return std::abs(std::sin(std::cos(seed)+Time::elapsed_time().count()));
+    }
+
     void mainLoop()
     {
+        auto tcount = Time::elapsed_time().count();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(shader_program);
         GLuint time_location = glGetUniformLocation(shader_program, "time");
-        glUniform1f(time_location, Time::elapsed_time().count());
+        glUniform1f(time_location, tcount);
         GLuint _xpos = glGetUniformLocation(shader_program, "mox");
         glUniform1f(_xpos, gxpos);
         GLuint _ypos = glGetUniformLocation(shader_program, "moy");
         glUniform1f(_ypos, gypos);
-        glDrawArrays(GL_POINTS, 0, 1030);
+        GLuint _div = glGetUniformLocation(shader_program, "div");
+        glUniform1f(_div, div);
+        glDrawArrays(primitiveType, 0, np);
+        double r = magic_rgb(std::sin(tcount));
+        double g = magic_rgb(std::cos(tcount));
+        double b = magic_rgb(r*g);
+        double a = magic_rgb(b);
+        glClearColor(r,g,b,a);
         glUseProgram(0);
     }
 
@@ -573,6 +575,7 @@ private:
 
     inline static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods){
         // std::cout << "key:\t" << key << "\t" << (char)key << "\tscancode:\t" << scancode << "\taction:\t" << action << "\tmods:\t" << mods << '\n';
+        if(key == 'T') Time::tick();
         if (key == GLFW_KEY_KP_ADD && action == GLFW_PRESS){
             next();
         }

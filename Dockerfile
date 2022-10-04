@@ -32,6 +32,10 @@ RUN apt install -y \
 	fish \
 	firefox-esr \
 	libreoffice \
+
+#Simulators, Tools
+RUN apt install -y \
+	ktechlab \
 	sonic-visualiser
 
 RUN pip install numpy pandas openpyxl

@@ -18,11 +18,14 @@ lb = "[-"
 rb = "-]"
 
 htemplate = """
+#pragma once
 #include "LAakTable.h"
+#include <memory>
 #include "{classname}.h"
 
 class Meta{classname} {lb}
 private:
+    inline static std::vector<std::unique_ptr<{classname}>> sceneList;
     static std::map<std::string, const std::string> docs = {lb}
 {docs}
     {rb}

@@ -78,9 +78,10 @@ public:
     virtual void mouse_button_callback(int button, int action, int mods) = 0;
 
     GLuint shader_program;
+    GLint primitiveType;
     static inline GLenum primitiveTypes[] = {GL_POINTS, GL_LINE_STRIP, GL_LINE_LOOP, GL_LINES, GL_LINE_STRIP_ADJACENCY, GL_LINES_ADJACENCY, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN, GL_TRIANGLES, GL_TRIANGLE_STRIP_ADJACENCY, GL_TRIANGLES_ADJACENCY };
 
-    static void loadVertex(std::vector<cgmath::vec2> &positions, int i, GLuint vao[], GLuint positionsVBO[]) {
+    static void loadVertex(std::vector<cgmath::vec2> &positions, int i, GLuint* vao, GLuint* positionsVBO) {
         //glGenVertexArrays(vaoSize, &vao[i]);
         glGenVertexArrays(1, &vao[i]);
         glBindVertexArray(vao[i]);
@@ -96,20 +97,20 @@ public:
 
     void setupShaders(std::vector<Shader>& shaders){
 		GLuint shader[shaders.size()];
-        GLchar* shader_source[shaders.size()];
-		GLint shader_compiled[shaders.size()];
-		GLint log_length;
-		std::vector<GLchar> log;
 		for(int i = 0; i < shaders.size(); i++){
+		    std::vector<GLchar> log;
 			//load shader and compile
-			shader_source[i] = (GLchar*)shaders[i].text.c_str();
+            shaders[i].text += "\n\n\0";
+			const GLchar* source = (const GLchar*)shaders[i].text.c_str();
 			shader[i] = glCreateShader(shaders[i].type);
-			glShaderSource(shader[i], 1, &shader_source[i], nullptr);
+			glShaderSource(shader[i], 1, &source, nullptr);
 			glCompileShader(shader[i]);
 
 			//check for errors
-			glGetShaderiv(shader[i], GL_COMPILE_STATUS, &shader_compiled[i]);
-			if (shader_compiled[i] != GL_TRUE) {
+            GLint compiled;
+            GLint log_length;
+			glGetShaderiv(shader[i], GL_COMPILE_STATUS, &compiled);
+			if (compiled != GL_TRUE) {
 				glGetShaderiv(shader[i], GL_INFO_LOG_LENGTH, &log_length);
 				log.resize(log_length);
 				glGetShaderInfoLog(shader[i], log_length, &log_length, &log[0]);
@@ -140,32 +141,13 @@ class SceneStart : public Scene {
 	float psize = 22.0;
 	float pwidth = 33.0f;
 
-    double sc_mxpos, sc_mypos;
+    uint py = 0.1;
 
-    uint points = 666;
+    uint16_t points = 666;
 
-    std::string vertex =
-        "#version 330\n"
-        "uniform float time;\n"
-        "uniform float psize;\n"
-        "uniform float width;\n"
-        "out vec4 InterpolatedColor;\n"
-        "void main(){\n"
-        "    //float width = 10.0f;\n"
-        "    float x = float(gl_VertexID)/ width;\n"
-        "    float y = float(gl_VertexID)/ width;\n"
-        "    float u = x / (width - 1.0f);\n"
-        "    float v = y / (width - 1.0f);\n"
-        "    float xOffset = cos(time + y * 0.2f) * 0.1f;\n"
-        "    float yOffset = cos(time + x * 0.3f) * 0.2f;\n"
-        "    float ux = u * 2.0f - 1.0f + xOffset;\n"
-        "    float uy = v * 2.0f - 1.0f + yOffset;\n"
-        "    vec2 xy = vec2(ux, uy) * 1.2f;\n"
-        "    gl_Position = vec4(xy, 0.0f, 1.0f);\n"
-        "    gl_PointSize = psize;\n"
-        "    InterpolatedColor = vec4(sin(time*x), cos(time*y), cos(x*y), 1.0);\n"
-        "}\n"
-        "";
+    std::string vertex = "";
+
+    GLint primitiveType;
 
     std::string fragment =
         "#version 330\n"
@@ -184,14 +166,14 @@ class SceneStart : public Scene {
 
 	void init(){    
         ifile shvertex;
-        if(shvertex.read("../shaders/grid.vert")){
-            std::string vertex = shvertex.get_contents();
-        }
+        shvertex.read("../shaders/grid.vert");
+        // std::string vertex = shvertex.get_contents();
+        vertex = shvertex.get_contents();
 
         ifile shfragment;
-        if(shvertex.read("../shaders/solid_color.frag")){
-            std::string fragment = shfragment.get_contents();
-        }
+        shfragment.read("../shaders/solid_color.frag");
+        // std::string fragment = shfragment.get_contents();
+        fragment = shfragment.get_contents();
 
         std::vector<Shader> shaders;
         shaders.push_back({"positions", vertex, GL_VERTEX_SHADER});
@@ -214,17 +196,55 @@ class SceneStart : public Scene {
     void error_callback(int error, const char* desc){}
 	void resize(int width, int height){}
 	void key_callback(int key, int scancode, int action, int mods){
-        if(key == '1'){
-            points += 22;
+        if(key == 'A'){
+            py += 0.1;
         }
-        if(key == '2'){
-            points -= 22;
+        if(key == 'S'){
+            py -= 0.1;
+        }
+        if (key == '1') {
+            primitiveType = primitiveTypes[0];
+        }
+
+        if (key == '2') {
+            primitiveType = primitiveTypes[1];
+        }
+
+        if (key == '3') {
+            primitiveType = primitiveTypes[2];
+        }
+
+        if (key == '4') {
+            primitiveType = primitiveTypes[3];
+        }
+
+        if (key == '5') {
+            primitiveType = primitiveTypes[4];
+        }
+
+        if (key == '6') {
+            primitiveType = primitiveTypes[5];
+        }
+
+        if (key == '7') {
+            primitiveType = primitiveTypes[6];
+        }
+
+        if (key == '8') {
+            primitiveType = primitiveTypes[7];
+        }
+
+        if (key == '9') {
+            primitiveType = primitiveTypes[8];
+        }
+
+        if (key == '0') {
+            primitiveType = primitiveTypes[9];
         }
     }
     void cursor_position_callback(double xpos, double ypos){
-        sc_mxpos = xpos;
-        sc_mypos = ypos;
         psize = xpos;
+        pwidth = ypos/mul;
     }
     void mouse_button_callback(int button, int action, int mods){
         printf("%d\t%d\t%d\n", button, action, mods);
@@ -241,16 +261,20 @@ class SceneStart : public Scene {
     }
 
 	void mainLoop(){
+        auto tcount = Time::elapsed_time().count();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(shader_program);
         GLuint time_location = glGetUniformLocation(shader_program, "time");
-        glUniform1f(time_location, Time::elapsed_time().count());
+        glUniform1f(time_location, tcount);
         GLuint p_size = glGetUniformLocation(shader_program, "psize");
         glUniform1f(p_size, psize);
         GLuint _width = glGetUniformLocation(shader_program, "width");
         glUniform1f(_width, pwidth);
-        // glDrawArrays(GL_TRIANGLE_STRIP, 0, 100);	
-        glDrawArrays(GL_POINTS, 0, points);
+        GLuint _py = glGetUniformLocation(shader_program, "py");
+        glUniform1f(_py, py);
+        // glDrawArrays(GL_TRIANGLE_STRIP, 0, 100);
+        points += std::cos(tcount)*((int)tcount%33);
+        glDrawArrays(primitiveType, 0, points);
         double r = magic_rgb(33.3);
         double g = magic_rgb(r);
         double b = magic_rgb(g);
@@ -261,9 +285,9 @@ class SceneStart : public Scene {
 };
 
 class SceneConchoid : public Scene {
-    static const int vaoSize = 20;
+    static const int vaoSize = 300;
 	GLuint vao[vaoSize];
-	GLuint positionsVBO[vaoSize];
+	GLuint _positionsVBO[vaoSize];
 	GLenum primitiveType;
 	GLuint positionsSize[vaoSize];
 
@@ -277,7 +301,7 @@ class SceneConchoid : public Scene {
         return p + d;
     }
 
-    void init() {	
+    void init() {
         //getpoints
         float k = 0.1f;
         cgmath::vec2 o(0.0f,0.4f);
@@ -285,7 +309,7 @@ class SceneConchoid : public Scene {
         float interval = 0.01f;
         float wsize = 2.0f;
 
-        float range = 1.0f / 16;
+        float range = 1.0f / 1600;
 
         for (int j = 0; j < vaoSize; j++) {
             if (j % 2 == 0) {
@@ -298,7 +322,7 @@ class SceneConchoid : public Scene {
                 }
 
                 positionsSize[j] = positionsUp.size();
-                loadVertex(positionsUp, j, vao, positionsVBO);
+                loadVertex(positionsUp, j, vao, _positionsVBO);
             }
             else {
                 std::vector<cgmath::vec2> positionsDown;
@@ -310,7 +334,7 @@ class SceneConchoid : public Scene {
                 }
 
                 positionsSize[j] = positionsDown.size();
-                loadVertex(positionsDown, j, vao, positionsVBO);
+                loadVertex(positionsDown, j, vao, _positionsVBO);
                 k += 0.1f;
             }
         }
@@ -343,10 +367,8 @@ class SceneConchoid : public Scene {
     void mouse_button_callback(int button, int action, int mods){}
 
     void key_callback(int key, int scancode, int action, int mods){
-        std::cout << (char)key << '\n';
         if (key == '1') {
             primitiveType = primitiveTypes[0];
-            std::cout << "Yeah\n";
         }
 
         if (key == '2') {
@@ -387,12 +409,77 @@ class SceneConchoid : public Scene {
     }
 };
 
-class SceneManager{
-public:
-    inline static void push_scene(Scene* scene){
-        sceneList.push_back(std::unique_ptr<Scene>(scene));
+class SceneSphere : public Scene {
+    float gypos, gxpos;
+    void error_callback(int error, const char* desc){};
+	void key_callback(int key, int scancode, int action, int mods){
+        std::string str = "" + (char)key;
+        auto n = (atoi(str.c_str()) - 1)%10;
+        primitiveType = primitiveTypes[n];
+
+    };
+    void cursor_position_callback(double xpos, double ypos){
+        gypos = ypos;
+        gxpos = xpos;
+    };
+    void mouse_button_callback(int button, int action, int mods){};
+    ~SceneSphere()
+    {
+        //Delete executable from memory when scene fades,.
+        glDeleteProgram(shader_program);
     }
 
+    void init()
+    {
+        ifile shvertex;
+        shvertex.read("../shaders/sphere.vert");
+        std::string vertex = shvertex.get_contents();
+
+        ifile shfragment;
+        shfragment.read("../shaders/solid_color.frag");
+        std::string fragment = shfragment.get_contents();
+
+        std::vector<Shader> shaders;
+        shaders.push_back({"positions", vertex, GL_VERTEX_SHADER});
+        shaders.push_back({"colors", fragment, GL_FRAGMENT_SHADER});
+	    setupShaders(shaders);
+    }
+
+    void awake()
+    {
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glEnable(GL_PROGRAM_POINT_SIZE);//diferentes tamanios de puntos para cada shaders
+    }
+
+    void sleep()
+    {
+        glClearColor(1.0f, 1.0f, 0.5f, 1.0f);
+        glDisable(GL_PROGRAM_POINT_SIZE);
+    }
+
+    void mainLoop()
+    {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glUseProgram(shader_program);
+        GLuint time_location = glGetUniformLocation(shader_program, "time");
+        glUniform1f(time_location, Time::elapsed_time().count());
+        GLuint _xpos = glGetUniformLocation(shader_program, "mox");
+        glUniform1f(_xpos, gxpos);
+        GLuint _ypos = glGetUniformLocation(shader_program, "moy");
+        glUniform1f(_ypos, gypos);
+        glDrawArrays(GL_POINTS, 0, 1030);
+        glUseProgram(0);
+    }
+
+    void resize(int width, int height)
+    {
+    }
+
+    void reset(){};
+};
+
+class SceneManager{
+public:
     inline static void start(const char *name, int w, int h){
         Time::init();
         if (!glfwInit()){
@@ -539,8 +626,10 @@ private:
     inline static void initialize(){
         std::unique_ptr<Scene> scene0(new SceneStart);
         std::unique_ptr<Scene> scene1(new SceneConchoid);
+        std::unique_ptr<Scene> scene2(new SceneSphere);
         sceneList.push_back(std::move(scene0));
         sceneList.push_back(std::move(scene1));
+        sceneList.push_back(std::move(scene2));
 
         //vao
         GLuint vao;

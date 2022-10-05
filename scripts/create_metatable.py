@@ -87,19 +87,24 @@ cctemplate = """
 {functions}
 """
 
+class_category = ['class','struct']
+
 # for each class
 classes = []
 try:
-    classes = tree[tree['K'].isin(['class','struct'])]['N'].unique()
+    classes = tree[tree['K'].isin(class_category)]['N'].unique()
     # classes = tree['N'].unique()
 except:
     # Create namespace functions, if namespace is ""  create name
     print("No classes or structs here m8")
     sys.exit(-1)
 
-for c in classes:
-# for c in namespace:
-    ndf = tree[tree['Z'].str.contains(c)]
+rest_df = tree[~tree['K'].isin(class_category)]
+rnspace = rest_df['Z']
+
+def make_template(ndf, c):
+    if c == "":
+        c = "_RTable"
     # functions
     functionstmplt = {}
     _impfunctmplt = {}
@@ -127,6 +132,9 @@ for c in classes:
         _lfunctmplt_ = '\t\t{lb}\t"{0}",\t\t{0} {rb},\n'
         lfunctmplt[row['N']] = _lfunctmplt_.format(fname, rb=rb, lb=lb)
 
+    # avoid empty ones
+    if len(functionstmplt) == 0 and len(_impfunctmplt) == 0 and len(docstmpt) == 0 and len(lfunctmplt) == 0 and len(_rtntype) == 0:
+        return
     _functionstmplt = ""
     _impfunc = ""
     _docstmplt = ""
@@ -151,3 +159,12 @@ for c in classes:
     f = open(_fname,"w")
     f.write(tmplt)
     f.close()
+
+for nsp in rnspace:
+    ndf = rest_df[rest_df['Z'].str.contains(nsp)]
+    make_template(ndf, nsp)
+
+for c in classes:
+# for c in namespace:
+    ndf = tree[tree['Z'].str.contains(c)]
+    make_template(ndf, c)

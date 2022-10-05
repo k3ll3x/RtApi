@@ -2,6 +2,8 @@
 
 # Create template for LAak Metatable
 
+from random import randrange
+
 from create_tree import *
 sub = {
     'operator [*][=]': '__mul',
@@ -25,7 +27,6 @@ htemplate = """
 
 class Meta{classname} {lb}
 private:
-    inline static std::vector<std::unique_ptr<{classname}>> sceneList;
     static std::map<std::string, const std::string> docs = {lb}
 {docs}
     {rb}
@@ -104,7 +105,7 @@ rnspace = rest_df['Z']
 
 def make_template(ndf, c):
     if c == "":
-        c = "_RTable"
+        c = "_RTable{0}".format(randrange(999))
     # functions
     functionstmplt = {}
     _impfunctmplt = {}

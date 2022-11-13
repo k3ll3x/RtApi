@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+  devenv:
+    tty: true
+    container_name: devenv
+    build: ${DOCKERFILE-.}
+    pid: host
+    entrypoint: ${ENTRY-bash}
+    ports:
+      - 5556:5556
+      - 5555:5555
+    environment:
+      - DISPLAY=:0
+    volumes:
+      - ${SRC-..}:/home/devu/repo
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - $HOME/.ssh:/root/.ssh
+    devices:
+      - /dev/dri/card0:/dev/dri/card0
+      - /dev/snd:/dev/snd
+    networks:
+      dashnet:
+        ipv4_address: 10.0.0.2
+
+networks:
+  dashnet:
+    ipam:
+      config:
+        - subnet: "10.0.0.0/24"

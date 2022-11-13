@@ -13,3 +13,4 @@ nat:
 clean:
 	rm -fr build/*
 	rm -fr generated/*
+	rm -fr sink/*

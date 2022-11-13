@@ -10,10 +10,10 @@ include_directories(
 # set(FLIB folder)
 
 add_subdirectory(cgmath)
-set(CGMATH cgmath)
+set(CGMATH cgmath) 
 
 file(GLOB SOURCES "src/*.cc")
 
 add_executable(rtapi ${SOURCES})
 set (CMAKE_SHARED_LINKER_FLAGS "-DIMGUI_IMPL_OPENGL_LOADER_GLEW,`pkg-config --static --libs glfw3`,`pkg-config --cflags glfw3`")
-target_link_libraries(rtapi cgmath GLEW glfw GL m X11)
+target_link_libraries(rtapi zmq pthread cgmath GLEW glfw GL m X11)

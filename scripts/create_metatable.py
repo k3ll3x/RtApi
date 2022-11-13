@@ -23,13 +23,18 @@ htemplate = """
 #pragma once
 #include "LAakTable.h"
 #include <memory>
+#include <map>
 #include "{classname}.h"
 
 class Meta{classname} {lb}
-private:
-    static std::map<std::string, const std::string> docs = {lb}
-{docs}
+public:
+    Meta{classname}() = delete;
+    ~Meta{classname}() = delete;
+    inline static std::string name = "{classname}";
+    void reg(lua_State* L){lb}
+        LAakTable::register_table(L, name.c_str(), methods, functions);
     {rb}
+private:
 {functions}
     static int tostring(lua_State* L);
     static int free(lua_State* L);
@@ -37,6 +42,10 @@ private:
     static int sub(lua_State* L);
     static int mul(lua_State* L);
     static int eq(lua_State* L);
+
+    static std::map<std::string, const std::string> docs = {lb}
+{docs}
+    {rb};
 
     static int doc(lua_State* L){lb}
         std::string who = "doc";
@@ -48,30 +57,23 @@ private:
         {rb}
         if(lua_checkstack(L, 1)){lb}
             lua_pushfstring(L, "%s", docs[who].c_str());
-        rightbelseleftb
+        rightb else leftb
             return luaL_error(L, LAakTable::nospacestack);
         {rb}
         return 1;
-    ]
+    {rb}
 
-    static const luaL_Reg methods[] = {lb}
+    inline static const luaL_Reg methods[] = {lb}
         {lmethods}
         {lb} nullptr, nullptr {rb}
     {rb};
 
-    static const luaL_Reg functions[] = {lb}
+    inline static const luaL_Reg functions[] = {lb}
 {lfunctions}
         {lb} "__gc", free {rb},
         {lb} "__tostring", tostring {rb},
         {lb} nullptr, nullptr {rb}
     {rb};
-public:
-    Meta{classname}() = delete;
-    ~Meta{classname}() = delete;
-    static std::string name = "{classname}";
-    void reg(lua_State* L){lb}
-        LAakTable::register_table(L, name.c_str(), methods, functions);
-    {rb}
 {rb};
 """
 
@@ -90,6 +92,9 @@ cctemplate = """
 
 class_category = ['class','struct']
 
+# Should be sent as a parameter, if defined then encapsulate all in named class
+allinoneclass = "RtAudio"
+
 # for each class
 classes = []
 try:
@@ -105,7 +110,10 @@ rnspace = rest_df['Z']
 
 def make_template(ndf, c):
     if c == "":
-        c = "_RTable{0}".format(randrange(999))
+        if allinoneclass != "":
+            c = allinoneclass
+        else:
+            c = "_RTable{0}".format(randrange(999))
     # functions
     functionstmplt = {}
     _impfunctmplt = {}
@@ -128,7 +136,7 @@ def make_template(ndf, c):
             _rtntype[row['N']] += _rtntypetmplt.format(row['t'],row['N'],row['S']) if row['t'] != '-' else _rtntypetmplt_.format(row['N'], row['S'])
         except:
             _rtntype[row['N']] = _rtntypetmplt.format(row['t'],row['N'],row['S']) if row['t'] != '-' else _rtntypetmplt_.format(row['N'], row['S'])
-        _docstmpt = "\t\t{lb}\t{0},\t\t{1} {rb},\n"
+        _docstmpt = "\t\t{lb}\t\"{0}\",\t\t{1} {rb},\n"
         docstmpt[row['N']] = _docstmpt.format(fname, '""', rb=rb, lb=lb)
         _lfunctmplt_ = '\t\t{lb}\t"{0}",\t\t{0} {rb},\n'
         lfunctmplt[row['N']] = _lfunctmplt_.format(fname, rb=rb, lb=lb)
@@ -150,6 +158,7 @@ def make_template(ndf, c):
     tmplt = htemplate.format(classname=c, functions=_functionstmplt, docs=_docstmplt, lfunctions=_lfunctmplt, lmethods="", rb=rb, lb=lb).replace(lb,'{').replace(rb,'}')
 
     _fname = "{0}/Meta{1}.h".format(gen_path,c)
+    # _fname = "{0}/{1}.h".format(gen_path,c)
     f = open(_fname,"w")
     f.write(tmplt)
     f.close()
@@ -157,6 +166,7 @@ def make_template(ndf, c):
     tmplt = cctemplate.format(classname=c, functions=_impfunc, rb=rb, lb=lb).replace(lb,'{').replace(rb,'}')
 
     _fname = "{0}/Meta{1}.cc".format(gen_path,c)
+    # _fname = "{0}/{1}.cc".format(gen_path,c)
     f = open(_fname,"w")
     f.write(tmplt)
     f.close()

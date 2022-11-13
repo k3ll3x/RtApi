@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+  osc:
+    tty: true
+    container_name: osc
+    build: ${DOCKERFILE-.}
+    pid: host
+    # entrypoint: [ "bash", "/home/devu/repo/scripts/set.sh" ]
+    ports:
+      - 444:444
+    environment:
+      - DISPLAY=:0
+    volumes:
+      - ${SRC-..}:/home/devu/repo
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - $HOME/.ssh:/root/.ssh
+    devices:
+      - /dev/dri/card0:/dev/dri/card0
+      - /dev/snd:/dev/snd
+    networks:
+      dashnet:
+        ipv4_address: 10.0.0.2
+
+networks:
+  dashnet:
+    ipam:
+      driver: default
+      config:
+        - subnet: "10.0.0.0/24"

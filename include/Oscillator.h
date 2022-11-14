@@ -9,6 +9,15 @@
 #include <vector>
 #include "Time.h"
 
+const double pi =  3.14159;
+
+struct OscConf {
+    double amp = 2.0;
+    double freq = 440;
+    long function = 0x32;
+    uint buffer_size = 200;
+};
+
 class Oscillator {
 public:
     // Oscillator(std::shared_ptr<zmq::context_t> _ctx, std::string addr){
@@ -21,9 +30,10 @@ public:
         std::vector<double> data;
         Time::init();
         while(keepRunning){
-            for(int i=0;i<buffer_size;i++){
-                auto angle = amp*freq*pi*i*Time::elapsed_time().count();
-                data.push_back(std::sin(angle));
+            for(int i=0;i<conf.buffer_size;i++){
+                auto angle = conf.amp*conf.freq*pi*i*Time::elapsed_time().count();
+                // data.push_back(std::sin(angle));
+                data.push_back((double)((long)angle & conf.function));
             }
             zmq::message_t message(data.size());
             memcpy(message.data(), data.data(), data.size());
@@ -37,12 +47,17 @@ public:
         keepRunning = false;
     }
 
-    double amp = 2.0;
-    double freq = 440;
-    double pi =  3.14159;
+    long set_function(long f){
+        conf.function = f;
+        return conf.nfunction;
+    }
+
+    void set_conf(OscConf _conf){
+        conf = _conf;
+    }
 private:
+    OscConf conf;
     std::atomic<bool> keepRunning = true;
-    uint buffer_size = 200;
     // std::shared_ptr<zmq::context_t> ctx;
     // zmq::context_t* ctx;
     // std::unique_ptr<zmq::socket_t> publisher;

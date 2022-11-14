@@ -9,6 +9,9 @@ RUN apt update
 RUN apt upgrade -y
 RUN apt update
 
+# Docker & compose to manipulate and create other containers
+RUN apt-get -y docker-compose docker.io
+
 RUN apt install -y \
 	python3 python3-pip cmake \
 	openssh-server \
@@ -45,7 +48,10 @@ RUN apt install -y \
 RUN pip install \
 	numpy pandas openpyxl \
 	matplotlib \
-	scipy
+	scipy\
+	gns3-server\
+	gns3-gui \
+	fastapi uvicorn python-multipart
 
 # Universal Ctags
 RUN	git clone https://github.com/universal-ctags/ctags.git; \

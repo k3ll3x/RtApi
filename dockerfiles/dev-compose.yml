@@ -15,6 +15,7 @@ services:
       - ${SRC-..}:/home/devu/repo
       - /tmp/.X11-unix:/tmp/.X11-unix
       - $HOME/.ssh:/root/.ssh
+      - "/var/run/docker.sock:/var/run/docker.sock"
     devices:
       - /dev/dri/card0:/dev/dri/card0
       - /dev/snd:/dev/snd

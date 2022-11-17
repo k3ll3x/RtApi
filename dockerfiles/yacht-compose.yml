@@ -1,7 +1,7 @@
 #admin@yacht.local
 #pass
 
-version: '3'
+version: '3.5'
 services:
   yacht:
     container_name: yacht
@@ -18,5 +18,3 @@ services:
       - PGID=0
       - COMPOSE_DIR=/compose
     image: selfhostedpro/yacht
-volumes:
-  yacht:

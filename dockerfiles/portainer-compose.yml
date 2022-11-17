@@ -1,24 +1,22 @@
-services:
-  portainer:
-    image: portainer/portainer-ce:latest
-    container_name: portainer
-    # command: -H unix:///var/run/docker.sock
-    ports:
-      - "9000:9000"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "../portainer_data:/data"
-    restart: always
-    networks:
-      dashnet:
-        ipv4_address: 10.0.0.3
-
+version: '3.5'
 networks:
-  dashnet:
-    ipam:
-      driver: default
-      config:
-        - subnet: "10.0.0.0/24"
-
-# volumes:
-#   portainer_data:
+    dashnet:
+        ipam:
+            config:
+            -   subnet: ${subnet}
+services:
+    portainer:
+        container_name: portainer
+        image: portainer/portainer-ce:latest
+        ports:
+        - ${portainerport}:${portainerport}
+        networks:
+            dashnet:
+                ipv4_address: ${portainerhost}
+        restart: unless-stopped
+        security_opt:
+        - no-new-privileges:true
+        volumes:
+        - /etc/localtime:/etc/localtime:ro
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+        - /tmp/portainer:/data

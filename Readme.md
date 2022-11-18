@@ -1,6 +1,6 @@
 # Runtime Api
 
-![mobius](mobios-dottet.svg)
+![mobius](mobios.png)
 
 ## Create Manipulate docker containers with diferent services
 

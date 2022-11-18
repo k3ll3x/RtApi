@@ -1,6 +1,6 @@
 # Runtime Api
 
-![mobius](mobios.png)
+![mobius](mobius.png)
 
 ## Create Manipulate docker containers with diferent services
 

@@ -5,7 +5,6 @@ function Service(){
     this.addInput("Generate","trigger");
     this.widget = this.addWidget("text", "Name", "", "Name");
     this.widget = this.addWidget("text", "Env", "", "Env");
-    this.addProperty("wtf", "build");
     this.addOutput("port","number");
     this.addOutput("port","number");
 }

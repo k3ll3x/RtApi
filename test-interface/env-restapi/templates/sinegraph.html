@@ -1,0 +1,203 @@
+<!doctype html>
+<html>
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+    <style>
+        .slidecontainer, .slider {
+            width: 100%; /* Width of the outside container */
+        }
+
+        /* .chart {
+            width: 100%;
+            height: 80%;
+        } */
+    </style>
+    <script>       
+        const labels = [];
+        
+        const data = {
+            labels: labels,
+            datasets: [
+            {
+                label: 'Phase 0',
+                data: [],
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgb(255, 99, 132, 0.5)',
+                tension: 0.4
+            },
+            {
+                label: 'Phase 1',
+                data: [],
+                borderColor: 'rgb(54, 162, 235)',
+                backgroundColor: 'rgb(54, 162, 235, 0.5)',
+                tension: 0.4
+            },
+            {
+                label: 'Phase 2',
+                data: [],
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgb(75, 192, 192, 0.5)',
+                tension: 0.4
+            },
+            {
+                label: 'Phase 3',
+                data: [],
+                borderColor: 'rgb(153, 102, 255)',
+                backgroundColor: 'rgb(153, 102, 255, 0.5)',
+                tension: 0.4
+            },
+        ]
+        };
+
+        const config = {
+            type: 'line',
+            data: data,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Sine Generator'
+                    }
+                }
+            },
+        };
+
+        // const data = chart.data;
+
+        async function reconnect(){
+            let response = await fetch(`/reconnect`);
+            if (response.ok) {
+            } else {
+                alert("HTTP-Error: " + response.status);
+            }
+        }
+
+        async function callback() {
+            value = document.getElementById("range").value
+            let response = await fetch(`/sinegraph/sine/${value}`);
+            if (response.ok) {
+                let json = await response.json();
+                // data.labels.push(index++);
+                // data.labels = data.labels.concat([...Array(json[0].length).keys()]);
+                data.labels = Array(json[0].length).fill(Date.now());
+                for (let index = 0; index < data.datasets.length; ++index) {
+                    // data.datasets[index].data = data.datasets[index].data.concat(json[index])
+                    data.datasets[index].data = json[index]
+                }
+                chart.update();
+            } else {
+                alert("HTTP-Error: " + response.status);
+            }
+        }
+
+        var interval = window.setInterval(() => {
+            callback()
+        }, 1500);
+
+        async function reset() {
+            let response = await fetch(`/sinegraph/reset`);
+            if (response.ok) {
+                await response.json();
+                chart.update()
+            } else {
+                alert("HTTP-Error: " + response.status);
+            }
+        }
+
+        var resetInterval = window.setInterval(()=>{
+            reset()
+        }, 20000);
+
+        var isIntervalSet = true;
+        var isResetIntervalSet = true;
+
+        function chInterval(){
+            isIntervalSet = !isIntervalSet;
+            if (isIntervalSet){
+                interval = window.setInterval(() => {
+                    callback()
+                }, 1500);
+                document.getElementById("interval_set").innerText = "Stop Auto Update";
+            }else{
+                clearInterval(interval);
+                document.getElementById("interval_set").innerText = "Start Auto Update";
+            }
+        }
+
+        function chResetInterval(){
+            isResetIntervalSet = !isResetIntervalSet;
+            if (isResetIntervalSet){
+                resetInterval = window.setInterval(() => {
+                    reset()
+                }, 1500);
+                document.getElementById("interval_reset").innerText = "Stop Auto Reset";
+            }else{
+                clearInterval(resetInterval);
+                document.getElementById("interval_reset").innerText = "Start Auto Reset";
+            }
+        }
+
+        async function setconf(){
+            let text = document.getElementById("sineconf").value;
+            let response = await fetch(`/sinegraph/cfg/${text}`);
+            console.log(response);
+        }
+
+        async function setchannels(){
+            let val = document.getElementById("channels").value;
+            let response = await fetch(`/sinegraph/ch/${val}`);
+            if(response.ok){
+                chart.data.datasets = []
+                for(let i = 0; i < parseInt(val); i++){
+                    let r,g,b;
+                    r = Math.floor(Math.random() * 255)
+                    g = Math.floor(Math.random() * 255)
+                    b = Math.floor(Math.random() * 255)
+                    chart.data.datasets.push({
+                        label: `Phase ${i}`,
+                        data: [],
+                        borderColor: `rgb(${r}, ${g}, ${b})`,
+                        backgroundColor: `rgba(${r}, ${g}, ${b}, 0.5)`,
+                        tension: 0.4
+                    })
+                }
+            }
+            console.log(response);
+        }
+    </script>
+</head>
+
+<body style="font-family:arial, sans-serif">
+    <button class="w3-button w3-border" id="interval_set" onclick="chInterval()">Stop Auto Update</button>
+    <button class="w3-button w3-border" id="interval_reset" onclick="chResetInterval()">Stop Auto Reset</button>
+    <canvas id="chart" width="100%" height="50%"></canvas>
+    <div class="w3-container w3-border" height="40%">
+        <div class="slidecontainer w3-container w3-border">
+            <input type="range" min="1" max="400" value="50" class="slider" id="range">
+            <button class="w3-button w3-border" onclick="reset()">Reset</button>
+            <button class="w3-button w3-border" onclick="callback()">Update Chart</button>
+            <button class="w3-button w3-border" onclick="reconnect()">Reconnect</button>
+        </div><br>
+        <div class="w3-container w3-border">
+            <input id="channels" placeholder="Number of channels"></input>
+            <button class="w3-button w3-border" onclick="setchannels()">Set Channels</button>
+        </div><br>
+        <div class="w3-container w3-border">
+            <textarea class="w3-input" id="sineconf"></textarea>
+            <button class="w3-button w3-border" onclick="setconf()">Set Sine Configuration</button>
+        </div>
+    </div>
+</body>
+<script>
+const ctx = document.getElementById('chart').getContext('2d');
+const chart = new Chart(ctx, config);
+</script>
+
+</html>

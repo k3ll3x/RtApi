@@ -6,7 +6,7 @@ networks:
             config:
             - subnet: ${subnet}
 services:
-    serv:
+    testinterface:
         container_name: ${name}
         volumes:
         - ${restapi}:/env-restapi

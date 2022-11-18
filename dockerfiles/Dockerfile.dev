@@ -30,6 +30,11 @@ RUN apt install -y \
 	libgles2-mesa-dev \
 	freeglut3-dev
 
+# x11 nginx
+WORKDIR /opt/rtmp
+RUN apt-get install build-essential libpcre3 libpcre3-dev libssl-dev nginx
+RUN wget https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/dev.zip
+
 #Misc
 RUN apt install -y \
 	git nano \

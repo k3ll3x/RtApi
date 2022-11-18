@@ -49,7 +49,7 @@ public:
 
     long set_function(long f){
         conf.function = f;
-        return conf.nfunction;
+        return conf.function;
     }
 
     void set_conf(OscConf _conf){

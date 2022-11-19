@@ -1,6 +1,6 @@
 #!/bin/bash
 # install cron & curl
-RUN apt -y install cron curl
+apt -y install cron curl
 
 # Give execution rights on the cron jobs
 chmod 0644 /etc/cron.d/*

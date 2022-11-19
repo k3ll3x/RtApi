@@ -1,2 +1,2 @@
-* * * * * printf "$(date)\t\tcron test" >> /var/log/cron.log 2>&1
+* * * * * /usr/local/scripts/testcron.sh >> /var/log/cron.log 2>&1
 # remove static after time

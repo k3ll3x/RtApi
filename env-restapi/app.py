@@ -40,9 +40,14 @@ def saveraw():
 
 lambdas = {}
 
+@app.route("/status", methods=['GET','POST'])
+def status():
+    print(request)
+    return jsonify({})
+
 @app.route("/sink", methods=['GET','POST'])
 def sink():
-    return jsonify(request)
+    return jsonify({})
 
 @app.route("/lambda", methods=['POST'])
 def savelambda():

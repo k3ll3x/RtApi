@@ -1,33 +1,34 @@
 version: '3.5'
 networks:
     dashnet:
-        driver: bridge
+        driver: ${networkdriver}
         ipam:
             config:
             - subnet: ${subnet}
 services:
-    testinterface:
-        container_name: testinterface
+    containers:
+        container_name: ${name}
         volumes:
         - ${volumepath}:/app
-        # chmod 0644 /etc/cron.d/*
         - ${cronpath}:/etc/cron.d
         - ${logspath}:/var/log
-        # chmod +x /usr/local/scripts
         - ${scriptspath}:/usr/local/scripts
+        # devices:
         build:
             context: ${context}
             dockerfile: ${dockerfile}
-        entrypoint: ${entrypoint}
+        working_dir: /app
+        entrypoint: >
+            bash -c "chmod +x /usr/local/scripts/* && /usr/local/scripts/cron_setup.sh && ${entrypoint}"
         environment:
         - ALIVE=TRUE
-        ports:
-        - ${ports}
         networks:
             dashnet:
                 ipv4_address: ${ipv4_address}
+        ports:
+        - ${ports}
         healthcheck:
-            test: ["CMD", "curl", "-f", "${restapiurl}"]
+            test: ["CMD", "curl", "-f", "${restapiurl}/status"]
             interval: ${interval}
             timeout: ${timeout}
             retries: ${retries}

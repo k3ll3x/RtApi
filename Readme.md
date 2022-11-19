@@ -9,12 +9,11 @@ focus on analysing C/C++ Libraries for creating C++ Class Templates to generate 
 
 Runtime Scripting Language Interface (e.g: Emscripten, Lua)
 
+## scripts
+
+- 
+
 ## Dependencies
 
-	- Docker
-
-it uses a docker development environment container for using all the following resources:
-
-	- ctags
-	- emsdk
-	- ..
+- docker.io
+- docker-compose

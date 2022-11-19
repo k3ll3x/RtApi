@@ -19,7 +19,7 @@ CMakeFiles/**
 
 generated/**
 
-scripts/__pucache__**
+scripts/__pycache__**
 
 .vscode/**
 

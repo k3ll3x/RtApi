@@ -2,3 +2,15 @@ add functions != struct or class in Namespace new class
 
 add helper functions from MatVec
 add for implementation template lua stack and push new object pointerdocker containers, schema configuration file
+
+documentation
+
+- create env, docker-compose template, env-api
+- start containers
+
+refactor scritps to for restapi
+create all scripts to env-api
+
+unit test template generator
+
+move generated path to sink volume

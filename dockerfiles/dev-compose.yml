@@ -12,6 +12,7 @@ services:
       - 5556:5556
       - 5555:5555
       - 5000:5000
+      - 22:22
     environment:
       - DISPLAY=:0
     volumes:

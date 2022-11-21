@@ -10,7 +10,24 @@ RUN apt upgrade -y
 RUN apt update
 
 # Docker & compose to manipulate and create other containers
-RUN apt-get -y docker-compose docker.io
+RUN apt-get -y install \
+	ca-certificates \
+	curl \
+	gnupg \
+	lsb-release \
+	wget
+
+RUN mkdir -p /etc/apt/keyrings
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+RUN echo \
+	"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+	$(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+RUN apt update
+RUN apt-get -y install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+# docker-engine docker.io containerd runc
+# RUN apt-get -y docker-compose
+# RUN apt-get -y docker.io
 
 RUN apt install -y \
 	python3 python3-pip cmake \
@@ -32,7 +49,7 @@ RUN apt install -y \
 
 # x11 nginx
 WORKDIR /opt/rtmp
-RUN apt-get install build-essential libpcre3 libpcre3-dev libssl-dev nginx
+RUN apt-get -y install build-essential libpcre3 libpcre3-dev libssl-dev nginx
 RUN wget https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/dev.zip
 
 #Misc
@@ -79,10 +96,10 @@ WORKDIR /emsdk
 #RUN git pull
 
 # Download and install the latest SDK tools.
-RUN ./emsdk install latest
+# RUN ./emsdk install latest
 
 # Make the "latest" SDK "active" for the current user. (writes .emscripten file)
-RUN ./emsdk activate latest
+# RUN ./emsdk activate latest
 
 # Activate PATH and other environment variables in the current terminal
 # RUN bash ./emsdk_env.sh

@@ -10,16 +10,13 @@ app = Flask(__name__)
 def index():
     return render_template("litegraph/index.html")
 
-scriptspath = "/usr/local/scripts"
-scriptfiles = [f for f in os.listdir() if isfile(join(scriptspath, f))]
-
 @app.route('/script/<name>')
 def runscript(name):
-    return name
+    return os.popen(f"").read()
 
 @app.route('/lstscripts')
 def listscritps():
-    return jsonify(scriptfiles)
+    return jsonify(os.popen(f"ls {scritpspath}").read().split("\n"))
 
 @app.route("/startcomposeraw", methods=['POST'])
 def startcompose():

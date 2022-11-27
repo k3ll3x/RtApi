@@ -6,14 +6,18 @@ networks:
             config:
             - subnet: ${subnet}
 services:
-    containers:
+    service-name:
         container_name: ${name}
         volumes:
         - ${volumepath}:/app
         - ${cronpath}:/etc/cron.d
         - ${logspath}:/var/log
         - ${scriptspath}:/usr/local/scripts
+        - ${miscpath:-/dev/null}:${miscpathdest:-/dev/null}
+        - ${dockersock:-/dev/zero}:${dockersock:-/dev/zero}
+        
         # devices:
+
         build:
             context: ${context}
             dockerfile: ${dockerfile}
@@ -21,7 +25,7 @@ services:
         entrypoint: >
             bash -c "chmod +x /usr/local/scripts/* && /usr/local/scripts/cron_setup.sh && ${entrypoint}"
         environment:
-        - ALIVE=TRUE
+        - ALIVE=true
         networks:
             dashnet:
                 ipv4_address: ${ipv4_address}

@@ -1,0 +1,12 @@
+version: '3.7'
+
+name: 'example'
+
+services:
+  example-service:
+    image: archive.jfrog.io/etc/custom-image-${BUILD:-debug}:latest
+    container_name: customname
+    environment:
+    - ALIVE=true
+    volumes:
+    - ./a:/app/out

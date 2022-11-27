@@ -59,7 +59,11 @@
                         <div class="accordion-body">
                             <form method="post" enctype="multipart/form-data" action="http://localhost:5000/startcompose">
                                 <div>
-                                    <label for="file">Choose file Docker-Compose file</label><br>
+                                    <label for="file">Choose environment file</label><br>
+                                    <input type="file" id="file" name="file" multiple />
+                                </div>
+                                <div>
+                                    <label for="file">Choose Docker-Compose file</label><br>
                                     <input type="file" id="file" name="file" multiple />
                                 </div>
                                 <div>

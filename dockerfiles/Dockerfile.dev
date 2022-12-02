@@ -39,6 +39,9 @@ RUN apt install -y \
 #zmq
 RUN apt install -y libzmq3-dev
 
+# boost
+RUN apt install libboost-dev
+
 # Computer Graphics - OpenGL
 RUN apt install -y \
 	libpng-dev libglu1-mesa-dev libx11-dev \

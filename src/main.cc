@@ -1,54 +1,43 @@
 // #include "TetraSand.h"
-// #include "Oscillator.h"
-// #include <thread>
+#include "Oscillator.h"
+#include <thread>
 #include <iostream>
 #include <string>
-
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/ini_parser.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string/trim.hpp>
-
-template<typename T>
-std::vector<T> to_array(const std::string& s){
-    std::vector<T> result;
-    std::stringstream ss(s);
-    std::string item;
-    while(std::getline(ss, item, ',')){
-        boost::algorithm::trim(item);
-        result.push_back(boost::lexical_cast<T>(item));
-    }
-    return result;
-}
+#include "IniParser.h"
 
 int main(int argc, char** argv){
-    boost::property_tree::ptree pt;
-    boost::property_tree::ini_parser::read_ini("config.ini", pt);
+    IniParser prsr("config.ini");
 
-    std::cout << pt.get<int>("config.samples") << std::endl;
-    auto analog = to_array<double>(pt.get<std::string>("expected.analog"));
+    auto samples = prsr.get<int>("config.samples");
+    auto analog = prsr.get_array<double>("expected.analog");
+    auto binary = prsr.get_array<int>("expected.binary");
+
     for(const auto i : analog){
         std::cout << i << "\n";
     }
 
-    auto binary = to_array<bool>(pt.get<std::string>("expected.binary"));
     for(const auto i : binary){
         std::cout << i << "\n";
     }
-    // zmq::context_t ctx;
-    // zmq::socket_t publisher(ctx, zmq::socket_type::pub);
-    // publisher.bind("tcp://localhost:5556");
-    // return 0;
 
-    // Oscillator osc("tcp://*:5556");
-    // std::thread osc_th(&Oscillator::run, &osc);
+    Oscillator osc("tcp://*:5556");
+    OscConf osccfg = {
+        .amp = prsr.get<double>("osc.amp"),
+        .freq = prsr.get<double>("osc.freq"),
+        .function = prsr.get<long>("osc.function"),
+        .buffer_size = prsr.get<uint>("osc.buffer_size")
+    };
+
+    osc.set_conf(osccfg);
+
+    std::thread osc_th(&Oscillator::run, &osc);
     
-    // std::cout << "Oscillator Running...\n";
-    // std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+    std::cout << "Oscillator Running...\n";
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 
-    // osc.stop();
-    // std::cout << "Stop Oscillator\n";
-    // osc_th.join();
+    osc.stop();
+    std::cout << "Stop Oscillator\n";
+    osc_th.join();
 
     // const char * title = "Die Lawaaierige Planeet";
 	// int w, h;

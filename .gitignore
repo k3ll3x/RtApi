@@ -6,6 +6,12 @@ node_modules/**
 **node_modules**
 node_modules/
 
+*.hdf*
+
+txts/**
+**txts**
+txts/
+
 build/
 **build/**
 build/**

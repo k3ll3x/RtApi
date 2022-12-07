@@ -9,8 +9,6 @@
 #include <vector>
 #include "Time.h"
 
-const double pi =  3.14159;
-
 struct OscConf {
     double amp = 2.0;
     double freq = 440;
@@ -29,9 +27,10 @@ public:
     void run(){
         std::vector<double> data;
         Time::init();
-        while(keepRunning){
+        // while(keepRunning.load(std::memory_order_acquire)){
+        while(keepRunning.load()){
             for(int i=0;i<conf.buffer_size;i++){
-                auto angle = conf.amp*conf.freq*pi*i*Time::elapsed_time().count();
+                auto angle = conf.amp*conf.freq*M_PI*i*Time::elapsed_time().count();
                 // data.push_back(std::sin(angle));
                 data.push_back((double)((long)angle & conf.function));
             }
@@ -44,7 +43,7 @@ public:
     }
 
     void stop(){
-        keepRunning = false;
+        keepRunning.store(false);
     }
 
     long set_function(long f){
@@ -57,7 +56,7 @@ public:
     }
 private:
     OscConf conf;
-    std::atomic<bool> keepRunning = true;
+    std::atomic<bool> keepRunning{true};
     // std::shared_ptr<zmq::context_t> ctx;
     // zmq::context_t* ctx;
     // std::unique_ptr<zmq::socket_t> publisher;

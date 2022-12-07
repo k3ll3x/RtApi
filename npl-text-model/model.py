@@ -22,29 +22,37 @@ from keras.layers import Embedding
 from keras.utils.np_utils import to_categorical
 from keras import layers
 import nltk
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
 from nltk.tokenize import sent_tokenize, word_tokenize, PunktSentenceTokenizer
 from nltk.corpus import stopwords, state_union
 import matplotlib.pyplot as plt
 from nltk.stem import PorterStemmer
 
+from os import listdir
+from os.path import isfile, join
+
 def usage():
-	print(f"{sys.argv[0]} filename")
+	print(f"{sys.argv[0]} path_to_dir")
 
 if len(sys.argv) < 2:
 	usage()
 	sys.exit()
 
-# Txt File
-filename = argv[1]
+path = sys.argv[1]
 
 #################################################### PARSING ####################################################
 
-## open file
-try:
-	raw_text = open(filename).read()
-except:
-	print(f"Error opening {filename}")
-	sys.exit()
+files = [f for f in listdir(path) if isfile(join(path, f))]
+raw_text = ""
+
+for file in files:
+    ## open file
+    try:
+        raw_text += open(path + file).read()
+    except:
+        print(f"Error opening {file}")
+        # sys.exit()
 
 raw_text = word_tokenize(raw_text.lower())
 
@@ -179,7 +187,10 @@ print("Done training.")
 
 ########################################## FULL ASSEMBELED TEXT GEN ##################################################
 
-seq_length = 500
+# seq_length = 500
+seq_length = 3000
+if len(sys.argv) > 3:
+    seq_length = int(sys.argv[2])
 
 # pick a random seed
 start_p = numpy.random.randint(0, len(dataX_p)-1)
@@ -230,7 +241,11 @@ newJunk = ""
 for i in newBunch:
     if len(i) > 1:
         newJunk += i + " "
-print(newJunk)
+
+# print(newJunk)
+f = open("../generated/magic.txt","w")
+f.write(newJunk)
+f.close()
 
 print("\nDone.")
 

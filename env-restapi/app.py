@@ -53,9 +53,9 @@ def status():
     print(request)
     return jsonify({})
 
-@app.route("/sink", methods=['GET','POST'])
-def sink():
-    return jsonify({})
+@app.route("/sink/<data>")#, methods=['GET','POST'])
+def sink(data):
+    return data
 
 @app.route("/lambda", methods=['POST'])
 def savelambda():

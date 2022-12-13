@@ -15,8 +15,13 @@ include_directories(
 add_subdirectory(cgmath)
 set(CGMATH cgmath) 
 
-file(GLOB SOURCES "src/*.cc")
+# file(GLOB SOURCES "src/*.cc")
 
-add_executable(rtapi ${SOURCES})
+# add_executable(rtapi ${SOURCES})
+add_executable(oscpub "src/osc_pub.cc")
+target_link_libraries(oscpub zmq pthread m ${Boost_LIBRARIES})
+
+add_executable(rtapi "src/main.cc")
+
 set (CMAKE_SHARED_LINKER_FLAGS "-DIMGUI_IMPL_OPENGL_LOADER_GLEW,`pkg-config --static --libs glfw3`,`pkg-config --cflags glfw3`")
-target_link_libraries(rtapi zmq pthread cgmath GLEW glfw GL m X11 ${Boost_LIBRARIES})
+target_link_libraries(rtapi zmq pthread cgmath GLEW glfw GL m X11)

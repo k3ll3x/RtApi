@@ -65,6 +65,9 @@ RUN apt install -y \
 	libreoffice \
 	inkscape
 
+#Rust
+# curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
 #Simulators, Tools
 RUN apt install -y \
 	ktechlab \

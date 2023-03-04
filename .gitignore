@@ -16,6 +16,10 @@ txts/**
 **txts**
 txts/
 
+target/**
+**target**
+target/
+
 build/
 **build/**
 build/**

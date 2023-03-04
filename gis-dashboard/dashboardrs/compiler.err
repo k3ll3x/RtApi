@@ -1,0 +1,284 @@
+   Compiling dashboardrs v0.1.0 (/home/devu/repo/gis-dashboard/dashboardrs)
+error: mismatched closing delimiter: `}`
+   --> src/main.rs:148:42
+    |
+145 |     fn view(&self) -> Html {
+    |                            - closing delimiter possibly meant for this
+...
+148 |         let mut ta: String = String::from("<html><head><script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script><li...
+    |                                          ^ unclosed delimiter
+...
+170 |     }
+    |     ^ mismatched closing delimiter
+
+error: expected one of `)`, `,`, `.`, `?`, or an operator, found `;`
+   --> src/main.rs:148:42
+    |
+148 | ...rom("<html><head><script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script><link href='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet' /></head><body><div id='map' style='width: 100%; height: 500px;'></div><script>mapboxgl.accessToken = '";
+    |       ^ unclosed delimiter                                                                                                                                                                                                                                                                        ^ help: `)` may belong here
+
+error: expected expression, found `)`
+   --> src/main.rs:170:5
+    |
+170 |     }
+    |     ^ expected expression
+
+error: the property value must be either a literal or enclosed in braces. Consider adding braces around your expression.: MethodCall(
+           ExprMethodCall {
+               attrs: [],
+               receiver: Field(
+                   ExprField {
+                       attrs: [],
+                       base: Path(
+                           ExprPath {
+                               attrs: [],
+                               qself: None,
+                               path: Path {
+                                   leading_colon: None,
+                                   segments: [
+                                       PathSegment {
+                                           ident: Ident {
+                                               ident: "self",
+                                               span: #0 bytes(5721..5725),
+                                           },
+                                           arguments: None,
+                                       },
+                                   ],
+                               },
+                           },
+                       ),
+                       dot_token: Dot,
+                       member: Named(
+                           Ident {
+                               ident: "link",
+                               span: #0 bytes(5726..5730),
+                           },
+                       ),
+                   },
+               ),
+               dot_token: Dot,
+               method: Ident {
+                   ident: "callback",
+                   span: #0 bytes(5731..5739),
+               },
+               turbofish: None,
+               paren_token: Paren,
+               args: [
+                   Closure(
+                       ExprClosure {
+                           attrs: [],
+                           movability: None,
+                           asyncness: None,
+                           capture: None,
+                           or1_token: Or,
+                           inputs: [
+                               Wild(
+                                   PatWild {
+                                       attrs: [],
+                                       underscore_token: Underscore,
+                                   },
+                               ),
+                           ],
+                           or2_token: Or,
+                           output: Default,
+                           body: Path(
+                               ExprPath {
+                                   attrs: [],
+                                   qself: None,
+                                   path: Path {
+                                       leading_colon: None,
+                                       segments: [
+                                           PathSegment {
+                                               ident: Ident {
+                                                   ident: "Msg",
+                                                   span: #0 bytes(5744..5747),
+                                               },
+                                               arguments: None,
+                                           },
+                                           Colon2,
+                                           PathSegment {
+                                               ident: Ident {
+                                                   ident: "AddPoint",
+                                                   span: #0 bytes(5749..5757),
+                                               },
+                                               arguments: None,
+                                           },
+                                       ],
+                                   },
+                               },
+                           ),
+                       },
+                   ),
+               ],
+           },
+       )
+   --> src/main.rs:158:37
+    |
+158 |                     <button onclick=self.link.callback(|_| Msg::AddPoint)>{"Add Point"}</button>
+    |                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0432]: unresolved imports `yew::ComponentLink`, `yew::ShouldRender`
+ --> src/main.rs:6:28
+  |
+6 | use yew::{html, Component, ComponentLink, Html, ShouldRender};
+  |                            ^^^^^^^^^^^^^        ^^^^^^^^^^^^ no `ShouldRender` in the root
+  |                            |
+  |                            no `ComponentLink` in the root
+  |                            help: a similar name exists in the module: `Component`
+
+error[E0433]: failed to resolve: use of undeclared type `GeoJson`
+   --> src/main.rs:183:13
+    |
+183 |             GeoJson::FeatureCollection(collection) => collection
+    |             ^^^^^^^ use of undeclared type `GeoJson`
+
+error[E0433]: failed to resolve: use of undeclared type `GeoJson`
+   --> src/main.rs:188:13
+    |
+188 |             GeoJson::Feature(feature) => match feature.geometry {
+    |             ^^^^^^^ use of undeclared type `GeoJson`
+
+error[E0433]: failed to resolve: use of undeclared type `GeoJson`
+   --> src/main.rs:192:13
+    |
+192 |             GeoJson::Geometry(geometry) => vec![geometry],
+    |             ^^^^^^^ use of undeclared type `GeoJson`
+
+error[E0433]: failed to resolve: use of undeclared type `File`
+   --> src/main.rs:175:20
+    |
+175 |     let mut file = File::open(path).expect("failed to open file");
+    |                    ^^^^ use of undeclared type `File`
+    |
+help: consider importing this struct
+    |
+1   | use std::fs::File;
+    |
+
+error[E0425]: cannot find function `start_app` in crate `yew`
+   --> src/main.rs:200:10
+    |
+200 |     yew::start_app::<Model>();
+    |          ^^^^^^^^^ not found in `yew`
+
+warning: unused imports: `App`, `HttpResponse`, `HttpServer`, `Responder`, `get`, `post`, `web`
+ --> src/main.rs:4:17
+  |
+4 | use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+  |                 ^^^  ^^^^  ^^^  ^^^  ^^^^^^^^^^^^  ^^^^^^^^^^  ^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `wasm_bindgen::prelude::*`
+ --> src/main.rs:7:5
+  |
+7 | use wasm_bindgen::prelude::*;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated type alias `geo::Coordinate`: Renamed to `geo_types::Coord` (or `geo::Coord`)
+ --> src/main.rs:5:11
+  |
+5 | use geo::{Coordinate, Geometry, Point, Polygon};
+  |           ^^^^^^^^^^
+  |
+  = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated type alias `geo::Coordinate`: Renamed to `geo_types::Coord` (or `geo::Coord`)
+  --> src/main.rs:27:41
+   |
+27 |     fn add_polygon(&mut self, points: &[Coordinate<f64>]) {
+   |                                         ^^^^^^^^^^
+
+warning: use of deprecated type alias `geo::Coordinate`: Renamed to `geo_types::Coord` (or `geo::Coord`)
+   --> src/main.rs:100:21
+    |
+100 |                     Coordinate { x: 0.0, y: 0.0 },
+    |                     ^^^^^^^^^^
+
+warning: use of deprecated type alias `geo::Coordinate`: Renamed to `geo_types::Coord` (or `geo::Coord`)
+   --> src/main.rs:101:21
+    |
+101 |                     Coordinate { x: 1.0, y: 0.0 },
+    |                     ^^^^^^^^^^
+
+warning: use of deprecated type alias `geo::Coordinate`: Renamed to `geo_types::Coord` (or `geo::Coord`)
+   --> src/main.rs:102:21
+    |
+102 |                     Coordinate { x: 1.0, y: 1.0 },
+    |                     ^^^^^^^^^^
+
+warning: use of deprecated type alias `geo::Coordinate`: Renamed to `geo_types::Coord` (or `geo::Coord`)
+   --> src/main.rs:103:21
+    |
+103 |                     Coordinate { x: 0.0, y: 1.0 },
+    |                     ^^^^^^^^^^
+
+warning: use of deprecated type alias `geo::Coordinate`: Renamed to `geo_types::Coord` (or `geo::Coord`)
+   --> src/main.rs:104:21
+    |
+104 |                     Coordinate { x: 0.0, y: 0.0 },
+    |                     ^^^^^^^^^^
+
+error[E0050]: method `create` has 2 parameters but the declaration in trait `yew::Component::create` has 1
+  --> src/main.rs:85:18
+   |
+85 |     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected 1 parameter, found 2
+   |
+   = note: `create` from trait: `fn(&yew::Context<Self>) -> Self`
+
+error[E0050]: method `update` has 2 parameters but the declaration in trait `yew::Component::update` has 3
+  --> src/main.rs:93:15
+   |
+93 |     fn update(&mut self, msg: Self::Message) -> ShouldRender {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected 3 parameters, found 2
+   |
+   = note: `update` from trait: `fn(&mut Self, &yew::Context<Self>, <Self as yew::Component>::Message) -> bool`
+
+error[E0050]: method `view` has 1 parameter but the declaration in trait `yew::Component::view` has 2
+   --> src/main.rs:145:13
+    |
+145 |     fn view(&self) -> Html {
+    |             ^^^^^ expected 2 parameters, found 1
+    |
+    = note: `view` from trait: `fn(&Self, &yew::Context<Self>) -> VNode`
+
+error[E0308]: mismatched types
+   --> src/main.rs:28:36
+    |
+28  |         let polygon = Polygon::new(points.to_vec(), vec![]);
+    |                       ------------ ^^^^^^^^^^^^^^^ expected struct `geo::LineString`, found struct `Vec`
+    |                       |
+    |                       arguments to this function are incorrect
+    |
+    = note: expected struct `geo::LineString<_>`
+               found struct `Vec<Coord>`
+note: associated function defined here
+   --> /home/devu/.cargo/registry/src/github.com-1ecc6299db9ec823/geo-types-0.7.8/src/geometry/polygon.rs:125:12
+    |
+125 |     pub fn new(mut exterior: LineString<T>, mut interiors: Vec<LineString<T>>) -> Self {
+    |            ^^^
+help: try wrapping the expression in `geo::LineString`
+    |
+28  |         let polygon = Polygon::new(geo::LineString(points.to_vec()), vec![]);
+    |                                    ++++++++++++++++               +
+
+error[E0599]: no variant or associated item named `MultiLine` found for enum `Geometry` in the current scope
+  --> src/main.rs:44:27
+   |
+44 |                 Geometry::MultiLine(_) => "MultiLineString",
+   |                           ^^^^^^^^^
+   |                           |
+   |                           variant or associated item not found in `Geometry<_>`
+   |                           help: there is a variant with a similar name: `MultiPoint`
+
+error[E0433]: failed to resolve: use of undeclared type `GeoJson`
+   --> src/main.rs:181:11
+    |
+181 |     match GeoJson::from_value(json) {
+    |           ^^^^^^^ use of undeclared type `GeoJson`
+
+Some errors have detailed explanations: E0050, E0308, E0425, E0432, E0433, E0599.
+For more information about an error, try `rustc --explain E0050`.
+warning: `dashboardrs` (bin "dashboardrs") generated 9 warnings
+error: could not compile `dashboardrs` due to 16 previous errors; 9 warnings emitted

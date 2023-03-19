@@ -64,9 +64,9 @@ fn main() -> std::io::Result<()> {
             let buffer = bincode::serialize(&my_struct).unwrap();
 
             // Send the buffer over the UDP socket to the multicast address
-            for _ in 0..100 {
+            for _ in 0..10 {
                 socket.send_to(&buffer, &multicast_addr).unwrap();
-                thread::sleep(time::Duration::from_millis(100));
+                thread::sleep(time::Duration::from_millis(10));
             }
         },
         _ => {

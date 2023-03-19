@@ -1,15 +1,10 @@
 [package]
-name = "dashboardrs"
+name = "giswebui"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-web = "4.0.0"
-dotenv = "0.15.0"
-geo = "0.22.1"
-geojson = "0.24.0"
-serde_json = "1.0.93"
-wasm-bindgen = "0.2.84"
-yew = "0.20.0"
+rlua = "0.19.4"
+rocket = "0.4.11"

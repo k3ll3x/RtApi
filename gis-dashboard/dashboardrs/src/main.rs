@@ -3,6 +3,7 @@ use std::process::{Command, Stdio};
 use std::io::Write;
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use geo::{Coordinate, Geometry, Point, Polygon};
+use geojson::GeoJson;
 use yew::{html, Component, ComponentLink, Html, ShouldRender};
 use wasm_bindgen::prelude::*;
 use dotenv::dotenv;
@@ -145,9 +146,8 @@ impl Component for Model {
     fn view(&self) -> Html {
         let mapbox_api_token: String = std::env::var("MAPBOX_API_TOKEN").expect("MAPBOX_API_TOKEN must be set.");
 
-        let mut ta: String = String::from("<html><head><script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script><link href='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet' /></head><body><div id='map' style='width: 100%; height: 500px;'></div><script>mapboxgl.accessToken = '";
-        let mut tb: String = String::from("';var map = new mapboxgl.Map({container: 'map',style: 'mapbox://styles/mapbox/streets-v11',zoom: 2,center: [0, 0]});var geojson = JSON.parse('{}');map.on('load', function () {{map.addSource('gis', {{type: 'geojson',data: geojson}});map.addLayer({id: 'gis',type: 'circle',source: 'gis',paint: {{'circle-color': '#FF0000', 'circle-radius': 5}}});}});</script></body></html>");
-        let template = format!("{ta}{mapbox_api_token}{tb}");
+        let tmplt: String = String::from("<html><head><script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script><link href='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet' /></head><body><div id='map' style='width: 100%; height: 500px;'></div><script>mapboxgl.accessToken = 'MAPBOX_API_TOKEN';var map = new mapboxgl.Map({container: 'map',style: 'mapbox://styles/mapbox/streets-v11',zoom: 2,center: [0, 0]});var geojson = JSON.parse('{}');map.on('load', function () {{map.addSource('gis', {{type: 'geojson',data: geojson}});map.addLayer({id: 'gis',type: 'circle',source: 'gis',paint: {{'circle-color': '#FF0000', 'circle-radius': 5}}});}});</script></body></html>");
+        let template = tmplt.replace("MAPBOX_API_TOKEN", &mapbox_api_token);
 
         let gis = self.gis.lock().unwrap();
         let geojson = gis.to_geojson();
@@ -155,15 +155,15 @@ impl Component for Model {
         html! {
             <div>
                 <div>
-                    <button onclick=self.link.callback(|_| Msg::AddPoint)>{"Add Point"}</button>
-                    <button onclick=self.link.callback(|_| Msg::AddPolygon)>{"Add Polygon"}</button>
+                    <button onclick={self.link.callback(|_| Msg::AddPoint)>{"Add Point"}}</button>
+                    <button onclick={self.link.callback(|_| Msg::AddPolygon)>{"Add Polygon"}}</button>
                 </div>
                 <div>
-                    <textarea value=&self.python_code oninput=self.link.callback(|e: yew::InputData| Msg::PythonCodeChanged(e.value))></textarea>
-                    <button onclick=self.link.callback(|_| Msg::RunPythonCode)>{"Run Python Code"}</button>
+                    <textarea value={&self.python_code} oninput={self.link.callback(|e: yew::InputData| Msg::PythonCodeChanged(e.value))}></textarea>
+                    <button onclick={self.link.callback(|_| Msg::RunPythonCode)>{"Run Python Code"}}</button>
                 </div>
                 <div>
-                    <iframe srcdoc=&format!(template, geojson)>
+                    <iframe srcdoc={&format!(template, geojson)}></iframe>
                 </div>
             </div>
         }

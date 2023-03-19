@@ -1,0 +1,16 @@
+{
+  "name": "terrahedronweb",
+  "version": "1.0.0",
+  "description": "Terrahedron WebUI",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "knzuv",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^5.76.2",
+    "webpack-cli": "^5.0.1",
+    "webpack-dev-server": "^4.13.1"
+  }
+}

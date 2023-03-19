@@ -1,0 +1,8 @@
+version: "3.9"
+services:
+  affine:
+    image: ghcr.io/toeverything/affine-self-hosted:pre-alpha
+    volumes:
+      - /tmp/affine:/affinevol
+    ports:
+      - 3000:3000

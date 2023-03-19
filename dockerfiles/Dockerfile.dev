@@ -1,7 +1,7 @@
 FROM debian:latest
 
 ARG username="devu"
-ARG userhome="/home/devu"
+ARG userhome="/home/${username}"
 
 ENV HOME ${userhome}
 
@@ -29,18 +29,19 @@ RUN apt-get -y install docker-ce docker-ce-cli containerd.io docker-compose-plug
 # RUN apt-get -y docker-compose
 # RUN apt-get -y docker.io
 
-RUN apt install -y \
-	python3 python3-pip cmake \
+RUN apt install -y python3 \
+	python3-pip cmake \
 	openssh-server \
 	build-essential \
 	libpthread-stubs0-dev \
-	autoconf automake pkg-config
+	autoconf automake pkg-config \
+	nodejs npm
 
 #zmq
 RUN apt install -y libzmq3-dev
 
 # boost
-RUN apt install libboost-dev
+RUN apt install -y libboost-dev
 
 # Computer Graphics - OpenGL
 RUN apt install -y \
@@ -48,7 +49,8 @@ RUN apt install -y \
 	libglfw3-dev \
 	libglew-dev \
 	libgles2-mesa-dev \
-	freeglut3-dev
+	freeglut3-dev \
+	libfontconfig libfontconfig1-dev
 
 # x11 nginx
 WORKDIR /opt/rtmp
@@ -65,21 +67,20 @@ RUN apt install -y \
 	libreoffice \
 	inkscape
 
-#Rust
-# curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
 #Simulators, Tools
 RUN apt install -y \
 	ktechlab \
 	sonic-visualiser 
 
-RUN pip install \
-	numpy pandas openpyxl \
+RUN pip install numpy \
+	pandas openpyxl \
 	matplotlib \
 	scipy\
 	gns3-server\
 	gns3-gui \
-	keras tensorflow tensorflow-gpu nltk \
+	# tensorflow-gpu \
+	keras tensorflow nltk
+
 
 # Universal Ctags
 RUN	git clone https://github.com/universal-ctags/ctags.git; \
@@ -89,25 +90,25 @@ RUN	git clone https://github.com/universal-ctags/ctags.git; \
 	make; \
 	make install
 
-# Get emscripten source
-RUN git clone https://github.com/emscripten-core/emscripten.git
+# # Get emscripten source
+# RUN git clone https://github.com/emscripten-core/emscripten.git
 
-# Get the emsdk repo
-RUN git clone https://github.com/emscripten-core/emsdk.git
+# # Get the emsdk repo
+# RUN git clone https://github.com/emscripten-core/emsdk.git
 
-# Enter that directory
-WORKDIR /emsdk
+# # Enter that directory
+# WORKDIR /emsdk
 
-# Fetch the latest version of the emsdk (not needed the first time you clone)
-#RUN git pull
+# # Fetch the latest version of the emsdk (not needed the first time you clone)
+# RUN git pull
 
-# Download and install the latest SDK tools.
+# # Download and install the latest SDK tools.
 # RUN ./emsdk install latest
 
-# Make the "latest" SDK "active" for the current user. (writes .emscripten file)
+# # Make the "latest" SDK "active" for the current user. (writes .emscripten file)
 # RUN ./emsdk activate latest
 
-# Activate PATH and other environment variables in the current terminal
+# # Activate PATH and other environment variables in the current terminal
 # RUN bash ./emsdk_env.sh
 
 # User
@@ -123,7 +124,22 @@ RUN service ssh start
 CMD ["/usr/sbin/sshd","-D"]
 EXPOSE 22
 
+#Rust
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+ENV PATH="$HOME/.cargo/bin:${PATH}"
+RUN chown -R $USER $HOME/.cargo/
+RUN chown -R $USER $HOME/.rustup/
+RUN curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+# Install Rust tooling
+ARG RUST_ANALYZER_VERSION=2023-01-02
+RUN wget -qO- "https://github.com/rust-analyzer/rust-analyzer/releases/download/${RUST_ANALYZER_VERSION}/rust-analyzer-$(uname -m)-unknown-linux-gnu.gz" | \
+    gunzip > /usr/local/bin/rust-analyzer && \
+    chmod 500 /usr/local/bin/rust-analyzer
+RUN rustup component add clippy rustfmt
+
 USER ${username}
+
 ENV fish_greeting="Alle Anfang ist schwer, anfangen ist Einfach, Beharrlichkeit eine Kunst."
 RUN echo "bash $HOME/repo/scripts/set.sh" >> ${userhome}/.bashrc
 

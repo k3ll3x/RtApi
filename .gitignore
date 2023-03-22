@@ -8,6 +8,10 @@ node_modules/
 
 *.hdf*
 
+**/tmp/**
+tmp/**
+tmp/
+
 **/one_step/**
 one_step/**
 one_step/

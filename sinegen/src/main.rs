@@ -3,6 +3,7 @@ use std::net::{TcpListener, UdpSocket, SocketAddrV4, Ipv4Addr};
 use std::{thread, time};
 use serde::{Serialize, Deserialize};
 use clap::Parser;
+use rand;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -16,9 +17,12 @@ struct Args {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct MyStruct {
-    value1: i32,
-    value2: f64,
+struct Frame {
+    points: Vec<f32>,
+}
+
+fn randf32_vec(n: i32) -> Vec<f32>{
+    (1..n).map(|x| x as f32 * rand::random::<f32>()).collect()
 }
 
 fn main() -> std::io::Result<()> {
@@ -28,9 +32,8 @@ fn main() -> std::io::Result<()> {
     println!("{args:?}");
 
     // Create a struct
-    let my_struct = MyStruct {
-        value1: 42,
-        value2: 3.14,
+    let mut frame = Frame {
+        points: randf32_vec(3)
     };
 
     match args.protocol.as_str() {
@@ -44,7 +47,7 @@ fn main() -> std::io::Result<()> {
                 let mut stream = stream.unwrap();
 
                 // Serialize the struct to a byte buffer
-                let buffer = bincode::serialize(&my_struct).unwrap();
+                let buffer = bincode::serialize(&frame).unwrap();
 
                 // Send the buffer over the TCP stream
                 stream.write_all(&buffer)?;
@@ -61,12 +64,15 @@ fn main() -> std::io::Result<()> {
             socket.join_multicast_v4(&multicast_addr.ip(), &Ipv4Addr::UNSPECIFIED)?;
 
             // Serialize the struct to a byte buffer
-            let buffer = bincode::serialize(&my_struct).unwrap();
+            let mut buffer = bincode::serialize(&frame).unwrap();
 
             // Send the buffer over the UDP socket to the multicast address
             for _ in 0..10 {
                 socket.send_to(&buffer, &multicast_addr).unwrap();
-                thread::sleep(time::Duration::from_millis(10));
+                thread::sleep(time::Duration::from_secs(1));
+                println!("New frame\t{:?}", frame);
+                frame.points = randf32_vec(rand::random::<i32>() % 5);
+                buffer = bincode::serialize(&frame).unwrap();
             }
         },
         _ => {

@@ -29,6 +29,14 @@ driver = webdriver.Firefox()
 
 time_range = [0.5,1.5]
 
+#use argprce
+tags = {
+    "p": "",
+    "code": "",
+    "pre": "",
+    "script": ""
+}
+
 for srch in search_list:
     if srch != '':
         driver.get(url + srch)
@@ -53,15 +61,15 @@ for srch in search_list:
                     continue
                 time.sleep(random.uniform(time_range[0], time_range[1]))
                 txttitle = '_'.join(re.sub("[^a-zA-Z0-9]+", "",driver.title.lower()).split(' '))
-                txt = ""
-                for p in driver.find_elements(By.TAG_NAME, "p"):
-                    try:
-                        txt += p.text
-                    except:
-                        pass
-                f = open(f'txts/{txttitle}.txt', 'w')
-                f.write(txt)
-                f.close()
+                for tag in tags:
+                    for e in driver.find_elements(By.TAG_NAME, tag):
+                        try:
+                            tags[tag] += e.text #also other attr: innerHtml ...
+                        except:
+                            pass
+                    f = open(f'txts/{txttitle}_tag{tag}.txt', 'w')
+                    f.write(tags[tag])
+                    f.close()
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 time.sleep(random.uniform(time_range[0], time_range[1]))

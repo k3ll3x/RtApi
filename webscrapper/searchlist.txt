@@ -1,4 +1,2 @@
-insects and fungi
-fungi farming control
-insects for protein
-tenebrio molitor
+python udp multicast
+keras image frame animation ffmpeg

@@ -1,9 +1,12 @@
+#[macro_use] extern crate rocket;
 use std::io::{Write};
 use std::net::{TcpListener, UdpSocket, SocketAddrV4, Ipv4Addr};
 use std::{thread, time};
 use serde::{Serialize, Deserialize};
 use clap::Parser;
 use rand;
+// use rocket::tokio::time::{sleep, Duration};
+use rocket::serde::json::Json;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -21,16 +24,33 @@ struct Frame {
     points: Vec<f32>,
 }
 
+#[get("/")]
+async fn index() -> Json<Frame> {
+    let frame = Frame {
+        points: randf32_vec(3)
+    };
+    Json(frame)
+}
+// #[get("/delay<secs>")]
+// async fn index(secs: u64) -> String {
+//     sleep(Duration::from_secs(secs)).await;
+//     format!("Waited for {} seconds", secs)
+// }
+
 fn randf32_vec(n: i32) -> Vec<f32>{
     (1..n).map(|x| x as f32 * rand::random::<f32>()).collect()
 }
 
-fn main() -> std::io::Result<()> {
-    // Parse command line arguments
+#[launch]
+async fn rocket() -> _ {
     let args = Args::parse();
-
     println!("{args:?}");
+    tokio::spawn(server(args));
 
+    rocket::build().mount("/", routes![index])
+}
+
+async fn server(args: Args) -> std::io::Result<()> {
     // Create a struct
     let mut frame = Frame {
         points: randf32_vec(3)
@@ -67,7 +87,8 @@ fn main() -> std::io::Result<()> {
             let mut buffer = bincode::serialize(&frame).unwrap();
 
             // Send the buffer over the UDP socket to the multicast address
-            for _ in 0..10 {
+            // for _ in 0..10 {
+            loop {
                 socket.send_to(&buffer, &multicast_addr).unwrap();
                 thread::sleep(time::Duration::from_secs(1));
                 println!("New frame\t{:?}", frame);
@@ -80,6 +101,7 @@ fn main() -> std::io::Result<()> {
             return Ok(());
         }
     }
+
 
     Ok(())
 }

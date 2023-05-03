@@ -41,7 +41,10 @@ for srch in search_list:
     if srch != '':
         driver.get(url + srch)
         time.sleep(random.uniform(time_range[0], time_range[1]))
-        links = driver.find_elements(By.ID, "links")[0].find_elements(By.TAG_NAME, 'a')#[1].get_attribute('href')
+        try:
+            links = driver.find_elements(By.ID, "links")[0].find_elements(By.TAG_NAME, 'a')#[1].get_attribute('href')
+        except:
+            pass
         linkshref = []
         print(f"{len(links)}:\t{srch}:\n")
         for link in links:

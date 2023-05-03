@@ -1,2 +1,4 @@
 python udp multicast
 keras image frame animation ffmpeg
+rust udp multicast struct
+CONTROL RF MIND ENTALGELMENT FUNGI

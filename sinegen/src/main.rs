@@ -95,6 +95,16 @@ async fn api_config(session: &State<TSession>, incfg: Json<Config>) -> Json<Fram
     Json(Frame { points: randf32_vec(16) })
 }
 
+// fn get_smv(_session: &State<TSession>, appid: u16) -> Vec<f32>{
+//     let session_clone = _session.clone();
+//     let mut session = session_clone.lock().unwrap();
+//     return (
+//         sine_conf[appid][channel_index].amplitude[0] *
+//         std::sin(2 * M_PI * sine_conf[appid][channel_index].frequency *
+//         time_in_secs[appid] + sine_conf[appid][channel_index].phase_shift) + sine_conf[appid][channel_index].offset
+//     );
+// }
+
 fn randf32_vec(n: i32) -> Vec<f32>{
     (1..n).map(|x| x as f32 * rand::random::<f32>()).collect()
 }
@@ -113,16 +123,18 @@ async fn main() {
     
     let session_clone = shsession.clone();
     thread::spawn( move || {
-        let s = session_clone.lock().unwrap();
         loop {
-            // let mut session = session_clone.lock().unwrap();
-            // get frame
-            let frame = Frame {
-                points: randf32_vec(rand::random::<i32>() % 16)
-            };
-            let buffer = bincode::serialize(&frame).unwrap();
-            s.socket.send_to(&buffer, &s.multicast_addr).unwrap();
-            thread::sleep(time::Duration::from_secs(1));
+            let s = session_clone.lock().unwrap();
+            for i in &s.wavemap {
+                println!("{:?}",i);
+                let frame = Frame {
+                    points: randf32_vec(rand::random::<i32>() % 16)
+                };
+                let buffer = bincode::serialize(&frame).unwrap();
+                // s.socket.send_to(&buffer, &s.multicast_addr).unwrap();
+                s.socket.send_to(&buffer, format!("{}:{}", &s.multicast_addr, "1233")).unwrap();
+                thread::sleep(time::Duration::from_secs(1));
+            }
         }
     });
 

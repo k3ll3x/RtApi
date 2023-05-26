@@ -1,0 +1,17 @@
+{
+    "lines": [
+        {
+            "appid": 0,
+            "channels": [
+                {
+                    "frequency": 50,
+                    "offset": 0,
+                    "phase_shift": 0,
+                    "lst": [
+                        100,200
+                    ]
+                }
+            ]
+        }
+    ]
+}

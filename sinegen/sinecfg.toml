@@ -1,0 +1,29 @@
+[[lines]]
+appid = 16401
+
+[[lines.channels]]
+frequency = 50
+offset = 0
+phase_shift = 0
+lst = [
+    100,
+    200,
+]
+
+[[lines]]
+appid = 16402
+
+[[lines.channels]]
+frequency = 60
+offset = 0.1
+phase_shift = 0.2
+lst = [33.22]
+
+[[lines]]
+appid = 16403
+
+[[lines.channels]]
+frequency = 60
+offset = 0.2
+phase_shift = 0.3
+lst = [22.33]

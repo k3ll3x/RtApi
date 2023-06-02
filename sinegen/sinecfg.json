@@ -12,6 +12,19 @@
                     ]
                 }
             ]
+        },
+        {
+            "appid": 1,
+            "channels": [
+                {
+                    "frequency": 60,
+                    "offset": 0.1,
+                    "phase_shift": 0.2,
+                    "lst": [
+                        33.22
+                    ]
+                }
+            ]
         }
     ]
 }

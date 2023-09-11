@@ -12,17 +12,24 @@ services:
       - 5556:5556
       - 5555:5555
       - 5000:5000
+      - 8000:8000
       - 22:22
     environment:
       - DISPLAY=:0
+      - UDEV=1
+      - PGID=1000
+      - PUID=1000
+      # - DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
     volumes:
       - ${SRC-..}:/home/devu/repo
       - /tmp/.X11-unix:/tmp/.X11-unix
       - $HOME/.ssh:/root/.ssh
       - "/var/run/docker.sock:/var/run/docker.sock"
+      - /tmp/pulseaudio.socket:/tmp/pulseaudio.socket
     devices:
       - /dev/dri/card0:/dev/dri/card0
       - /dev/snd:/dev/snd
+      - /dev/bus/usb:/dev/bus/usb
     networks:
       dashnet:
         ipv4_address: 10.0.0.2

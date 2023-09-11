@@ -9,6 +9,10 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+# Python Interpreter n shit
+find_package(PythonLibs REQUIRED)
+include_directories(${PYTHON_INCLUDE_DIRS})
+
 # add_subdirectory(folder)
 # set(FLIB folder)
 
@@ -24,4 +28,4 @@ target_link_libraries(oscpub zmq pthread m ${Boost_LIBRARIES})
 add_executable(rtapi "src/main.cc")
 
 set (CMAKE_SHARED_LINKER_FLAGS "-DIMGUI_IMPL_OPENGL_LOADER_GLEW,`pkg-config --static --libs glfw3`,`pkg-config --cflags glfw3`")
-target_link_libraries(rtapi zmq pthread cgmath GLEW glfw GL m X11)
+target_link_libraries(rtapi zmq pthread cgmath GLEW glfw GL m X11 ${PYTHON_LIBRARIES})

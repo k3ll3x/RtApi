@@ -4,6 +4,7 @@ ARG username="devu"
 ARG userhome="/home/${username}"
 
 ENV HOME ${userhome}
+ENV USER ${username}
 
 RUN apt update
 RUN apt upgrade -y
@@ -47,6 +48,9 @@ RUN apt-get install -y libclang-dev libgtk-3-dev libxcb-render0-dev libxcb-shape
 # boost
 RUN apt install -y libboost-dev
 
+#python lib for C/C++
+RUN apt install -y libpython3-dev
+
 # Computer Graphics - OpenGL
 RUN apt install -y \
 	libpng-dev libglu1-mesa-dev libx11-dev \
@@ -54,43 +58,57 @@ RUN apt install -y \
 	libglew-dev \
 	libgles2-mesa-dev \
 	freeglut3-dev \
-	libfontconfig libfontconfig1-dev
+	libfontconfig libfontconfig1-dev \
+	libxinerama-dev libxcursor-dev libxi-dev \
+	libasound2-dev libfontconfig1-dev
 
 # x11 nginx
-WORKDIR /opt/rtmp
-RUN apt-get -y install build-essential libpcre3 libpcre3-dev libssl-dev nginx
-RUN wget https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/dev.zip
+# WORKDIR /opt/rtmp
+# RUN apt-get -y install build-essential libpcre3 libpcre3-dev libssl-dev nginx
+# RUN wget https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/dev.zip
 
 #Misc
 RUN apt install -y \
 	git nano \
 	sudo \
 	tmux \
-	fish \
-	firefox-esr \
-	libreoffice \
-	inkscape
+	fish 
+	# firefox-esr \
+	# libreoffice \
+	# inkscape
 
 #Simulators, Tools
 RUN apt install -y \
 	ktechlab \
 	sonic-visualiser 
 
-RUN pip install numpy \
-	pandas openpyxl \
-	matplotlib \
-	scipy\
-	gns3-server\
-	gns3-gui \
-	# tensorflow-gpu \
-	tensorflow
-	keras  nltk
+RUN apt install -y python3-numpy \
+	python3-pandas \
+	python3-openpyxl \
+	python3-matplotlib \
+	python3-scipy \
+	python3-nltk \
+	python3-opencv \
+	python3-selenium
+
+# RUN pip install keras
+
+# RUN pip install numpy
+# RUN pip install pandas
+# RUN pip install openpyxl
+# RUN pip install matplotlib
+# RUN pip install scipy
+# RUN pip install gns3-server
+# RUN pip install gns3-gui
+# RUN pip install tensorflow-gpu
+# RUN pip install tensorflow keras nltk
+# RUN pip install opencv-python
 
 # RUN pip install -U tensorflow==2.3.0
 
 # webscrapper
-RUN pip install selenium\
-	guesslang
+# RUN pip install selenium\
+	# guesslang
 
 # Universal Ctags
 RUN	git clone https://github.com/universal-ctags/ctags.git; \
@@ -126,35 +144,59 @@ RUN	git clone https://github.com/universal-ctags/ctags.git; \
 # Kubectl
 
 # Add the Kubernetes signing key
-RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+# RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
 
 # Add the Kubernetes repository
-RUN echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+# RUN echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 
 # Install kubectl
-RUN sudo apt-get update && sudo apt-get install -y kubectl
+# RUN sudo apt-get update && sudo apt-get install -y kubectl
 
 # kustomize
 
 # Download the latest kustomize binary
-RUN curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+# RUN curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
 
 # Move the binary to a directory in your PATH
-RUN sudo mv kustomize /usr/local/bin/
+# RUN sudo mv kustomize /usr/local/bin/
 
 # fluxcd
 
 # Download the latest fluxctl binary
-RUN curl -sL https://github.com/fluxcd/flux/releases/latest/download/fluxctl_linux_amd64 -o fluxctl
+# RUN curl -sL https://github.com/fluxcd/flux/releases/latest/download/fluxctl_linux_amd64 -o fluxctl
 
 # Move the binary to a directory
-RUN mv fluxctl /usr/local/bin
+# RUN mv fluxctl /usr/local/bin
 
 # helm
 
-WORKDIR /opt/helm
-RUN curl -sL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 -o install_helm.sh
-RUN bash install_helm.sh
+# WORKDIR /opt/helm
+# RUN curl -sL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 -o install_helm.sh
+# RUN bash install_helm.sh
+
+#---------------------------------------------------
+
+# RTL-SDR
+
+RUN apt-get install -y git
+RUN apt-get install -y cmake
+RUN apt-get install -y build-essential
+RUN apt-get install -y libusb-1.0
+RUN apt-get install -y gqrx-sdr
+WORKDIR /opt/
+RUN git clone git://git.osmocom.org/rtl-sdr.git
+WORKDIR /opt/rtl-sdr/
+RUN mkdir build
+# RUN cd build
+WORKDIR /opt/rtl-sdr/build
+RUN cmake ../ -DINSTALL_UDEV_RULES=ON
+RUN make
+RUN make install
+RUN ldconfig
+RUN cp ../rtl-sdr.rules /etc/udev/rules.d/
+
+RUN echo "blacklist dvb_usb_rtl28xxu" > /etc/modprobe.d/blacklist dvb_usb_rtl28xxu.conf
+#rtl_test -s 2400000
 
 #---------------------------------------------------
 

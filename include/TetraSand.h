@@ -14,6 +14,8 @@
 #include "vec3.h"
 #include "utils.h"
 
+#include "Python.h"
+
 // #include "linmath.h"
 #include "ifile.h"
 
@@ -492,6 +494,8 @@ class SceneManager{
 public:
     inline static void start(const char *name, int w, int h){
         Time::init();
+        Py_Initialize();
+        PyRun_SimpleString("Python init.");
         if (!glfwInit()){
             std::cout << "Could not create window!\n";
             cleanup();
@@ -569,6 +573,8 @@ public:
 
         // Run main loop
         mainLoop();
+
+        Py_Finalize();
     }
 private:
     inline static GLFWwindow* window;
@@ -633,13 +639,18 @@ private:
         }
     }
 
+    inline static void add_scene(std::unique_ptr<Scene>& scene){
+        sceneList.push_back(std::move(scene));
+    }
+
     inline static void initialize(){
         std::unique_ptr<Scene> scene0(new SceneStart);
         std::unique_ptr<Scene> scene1(new SceneConchoid);
         std::unique_ptr<Scene> scene2(new SceneSphere);
-        sceneList.push_back(std::move(scene0));
-        sceneList.push_back(std::move(scene1));
-        sceneList.push_back(std::move(scene2));
+
+        add_scene(scene0);
+        add_scene(scene1);
+        add_scene(scene2);
 
         //vao
         GLuint vao;

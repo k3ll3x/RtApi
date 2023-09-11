@@ -1,0 +1,34 @@
+version: "3.9"
+services:
+  anon:
+    tty: true
+    container_name: anon
+    build:
+      context: .
+      dockerfile: ${DOCKERFILE-anon.dockerfile}
+    pid: host
+    entrypoint: ${ENTRY-bash}
+    ports:
+      - 5556:5556
+      - 5555:5555
+      - 5000:5000
+      - 8000:8000
+      - 22:22
+    environment:
+      - DISPLAY=:0
+    volumes:
+      - ${SRC-./tmp}:/home/anon
+      - /tmp/.X11-unix:/tmp/.X11-unix
+#    devices:
+#      - /dev/dri/card0:/dev/dri/card0
+#      - /dev/snd:/dev/snd
+    networks:
+      dashnet:
+        ipv4_address: 10.0.0.2
+
+networks:
+  dashnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "10.0.0.0/24"

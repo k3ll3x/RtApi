@@ -1,3 +1,6 @@
+sample_rate = 1
+noAsdu = 2
+
 [[lines]]
 appid = 16401
 

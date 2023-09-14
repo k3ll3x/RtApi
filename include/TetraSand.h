@@ -115,256 +115,30 @@ public:
 			glDeleteShader(shader[i]);
 		}
 	}
-};
 
-class SceneStart : public Scene {
-    float mul = 23.0;
-	float psize = 22.0;
-	float pwidth = 33.0f;
-
-    float py = 0.1;
-
-    uint16_t points = 666;
-
-    std::string vertex = "";
-
-    std::string fragment;
-
-	//destructors
-	~SceneStart(){
-        glDeleteProgram(shader_program);
-    }
-
-	void init(){    
+    void load_shaders(std::string vertfile, std::string fragfile){
         ifile shvertex;
-        shvertex.read("../shaders/grid.vert");
-        // std::string vertex = shvertex.get_contents();
-        vertex = shvertex.get_contents();
+        shvertex.read(vertfile);
+        std::string vertex = shvertex.get_contents();
 
         ifile shfragment;
-        shfragment.read("../shaders/solid.frag");
-        // std::string fragment = shfragment.get_contents();
-        fragment = shfragment.get_contents();
+        shfragment.read(fragfile);
+        std::string fragment = shfragment.get_contents();
 
         std::vector<Shader> shaders;
         shaders.push_back({"positions", vertex, GL_VERTEX_SHADER});
         shaders.push_back({"colors", fragment, GL_FRAGMENT_SHADER});
 	    setupShaders(shaders);
     }
-
-	void awake(){
-        glClearColor(0.42f,0.2f,0.33f,1.0f);
-        //diferent sizes of points for each shader program
-        glEnable(GL_PROGRAM_POINT_SIZE);
-    }
-
-	void sleep(){
-        glClearColor(0.2f,1.0f,0.5f,1.0f);
-	    glDisable(GL_PROGRAM_POINT_SIZE);
-    }
-
-	void reset(){}
-    void error_callback(int error, const char* desc){}
-	void resize(int width, int height){}
-	void key_callback(int key, int scancode, int action, int mods){
-        if(key == 'A'){
-            py += 0.1;
-        }
-        if(key == 'S'){
-            py -= 0.1;
-        }
-        if (key == '1') {
-            primitiveType = primitiveTypes[0];
-        }
-
-        if (key == '2') {
-            primitiveType = primitiveTypes[1];
-        }
-
-        if (key == '3') {
-            primitiveType = primitiveTypes[2];
-        }
-
-        if (key == '4') {
-            primitiveType = primitiveTypes[3];
-        }
-
-        if (key == '5') {
-            primitiveType = primitiveTypes[4];
-        }
-
-        if (key == '6') {
-            primitiveType = primitiveTypes[5];
-        }
-
-        if (key == '7') {
-            primitiveType = primitiveTypes[6];
-        }
-
-        if (key == '8') {
-            primitiveType = primitiveTypes[7];
-        }
-
-        if (key == '9') {
-            primitiveType = primitiveTypes[8];
-        }
-
-        if (key == '0') {
-            primitiveType = primitiveTypes[9];
-        }
-    }
-    void cursor_position_callback(double xpos, double ypos){
-        psize = xpos;
-        pwidth = ypos/mul;
-        py = std::sin(xpos * ypos);
-    }
-    void mouse_button_callback(int button, int action, int mods){
-        printf("%d\t%d\t%d\n", button, action, mods);
-        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
-            
-        }
-        if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS){
-            
-        }        
-    }
-
-    double magic_rgb(double seed){
-        return std::abs(std::cos(std::sin(seed)+Time::elapsed_time().count()));
-    }
-
-	void mainLoop(){
-        auto tcount = Time::elapsed_time().count();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glUseProgram(shader_program);
-        GLuint time_location = glGetUniformLocation(shader_program, "time");
-        glUniform1f(time_location, tcount);
-        GLuint p_size = glGetUniformLocation(shader_program, "psize");
-        glUniform1f(p_size, psize);
-        GLuint _width = glGetUniformLocation(shader_program, "width");
-        glUniform1f(_width, pwidth);
-        GLuint _py = glGetUniformLocation(shader_program, "py");
-        glUniform1f(_py, py);
-        // glDrawArrays(GL_TRIANGLE_STRIP, 0, 100);
-        points += std::cos(tcount)*((int)tcount%33);
-        glDrawArrays(primitiveType, 0, points);
-        double r = magic_rgb(33.3);
-        double g = magic_rgb(r);
-        double b = magic_rgb(g);
-        double a = magic_rgb(b);
-        glClearColor(r,g,b,a);
-        glUseProgram(0);
-    }
 };
 
-class SceneConchoid : public Scene {
-    static const int vaoSize = 300;
-	GLuint vao[vaoSize];
-	GLuint vbo[vaoSize];
-	// GLenum primitiveType;
-	GLuint positionsSize[vaoSize];
-    uint primitiveTypeInx = 0;
-
-	cgmath::vec2 getConcoidUp(cgmath::vec2 p, cgmath::vec2 &o, float k) {
-        cgmath::vec2 d = k * d.normalize(o - p);
-        return p - d;
-    }
-
-    cgmath::vec2 getConcoidDown(cgmath::vec2 p, cgmath::vec2 &o, float k) {
-        cgmath::vec2 d = k * d.normalize(o - p);
-        return p + d;
-    }
-    void init() {
-        //getpoints
-        float k = 0.1f;
-        cgmath::vec2 o(0.0f,0.4f);
-
-        float interval = 0.01f;
-        float wsize = 2.0f;
-
-        float range = 1.0f / 16;
-
-        primitiveType = GL_LINE_STRIP;
-        // primitiveType = GL_POINT;
-
-        for (int j = 0; j < vaoSize; j++) {
-            if (j % 2 == 0) {
-                std::vector<cgmath::vec2> positionsUp;
-                for (float i = -wsize; i < wsize; i += interval) {
-                    cgmath::vec2 q = getConcoidUp(cgmath::vec2(i, 0), o, k);
-                    if (!(q.x > -range && q.y > -range && q.x < range && q.y < range)) {
-                        positionsUp.push_back(q);
-                    }
-                }
-
-                positionsSize[j] = positionsUp.size();
-                loadVertex(positionsUp, j, vao, vbo);
-            }
-            else {
-                std::vector<cgmath::vec2> positionsDown;
-                for (float i = -wsize; i < wsize; i += interval) {
-                    cgmath::vec2 q = getConcoidDown(cgmath::vec2(i, 0), o, k);
-                    if (!(q.x > -range && q.y > -range && q.x < range && q.y < range)) {
-                        positionsDown.push_back(q);
-                    }
-                }
-
-                positionsSize[j] = positionsDown.size();
-                loadVertex(positionsDown, j, vao, vbo);
-                k += 0.1f;
-            }
-        }
-
-        ifile shvertex;
-        shvertex.read("../shaders/solid.vert");
-        std::string vertex = shvertex.get_contents();
-
-        ifile shfragment;
-        shfragment.read("../shaders/solid.frag");
-        std::string fragment = shfragment.get_contents();
-
-        std::vector<Shader> shaders;
-        shaders.push_back({"position", vertex, GL_VERTEX_SHADER});
-        shaders.push_back({"colors", fragment, GL_FRAGMENT_SHADER});
-	    setupShaders(shaders);
-    }
-
-    void awake() {
-        glClearColor(0.33, 0.5, 0.5, 1.0);
-        glPointSize(2.0f);
-    }
-
-    void sleep() {
-        glPointSize(1.0f);
-    }
-
-    void mainLoop() {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        // for (int i = 0; i < vaoSize; i++) {
-        // glBindVertexArray(0);
-        glDrawArrays(primitiveType, 0, vaoSize);
-            // glBindVertexArray(vao[i]);
-            // std::this_thread::sleep_for(std::chrono::microseconds(3000));
-        // }
-    }
-
-    void reset(){}
-    void error_callback(int error, const char* desc){}
-    void cursor_position_callback(double xpos, double ypos){}
-    void mouse_button_callback(int button, int action, int mods){}
-    void key_callback(int key, int scancode, int action, int mods){
-        primitiveTypeInx = (primitiveTypeInx + 1)%primitiveTypes.size();
-        primitiveType = primitiveTypes[primitiveTypeInx];
-    }
-};
-
-class SceneSphere : public Scene {
-    float gypos, gxpos, div = 33.131f;
-    int np = 1030;
-    float psz = 10.0;
+class SceneRTSh : public Scene {
+    float gypos, gxpos;
+    int np = 300000;
+    float psz = 1.0;
     GLint primitiveType = GL_POINTS;
     void key_callback(int key, int scancode, int action, int mods){
-        if(key == 'A')div += 1.323;
-        if(key == 'S')div -= 1.323;
+        if(key == 82)load_shaders("../shaders/rt.vert", "../shaders/rt.frag");;
         if(key == 'Q')np += 33;
         if(key == 'W')np -= 33;
         if (key == '1') {
@@ -421,7 +195,7 @@ class SceneSphere : public Scene {
             psz -= 1.2;
         }
     };
-    ~SceneSphere()
+    ~SceneRTSh()
     {
         //Delete executable from memory when scene fades,.
         glDeleteProgram(shader_program);
@@ -429,18 +203,7 @@ class SceneSphere : public Scene {
 
     void init()
     {
-        ifile shvertex;
-        shvertex.read("../shaders/sphere.vert");
-        std::string vertex = shvertex.get_contents();
-
-        ifile shfragment;
-        shfragment.read("../shaders/solid.frag");
-        std::string fragment = shfragment.get_contents();
-
-        std::vector<Shader> shaders;
-        shaders.push_back({"positions", vertex, GL_VERTEX_SHADER});
-        shaders.push_back({"colors", fragment, GL_FRAGMENT_SHADER});
-	    setupShaders(shaders);
+        load_shaders("../shaders/rt.vert", "../shaders/rt.frag");
     }
 
     void awake()
@@ -470,16 +233,10 @@ class SceneSphere : public Scene {
         glUniform1f(_xpos, gxpos);
         GLuint _ypos = glGetUniformLocation(shader_program, "moy");
         glUniform1f(_ypos, gypos);
-        GLuint _div = glGetUniformLocation(shader_program, "div");
-        glUniform1f(_div, div);
         GLuint _psz = glGetUniformLocation(shader_program, "psz");
         glUniform1f(_psz, psz);
         glDrawArrays(primitiveType, 0, np);
-        double r = magic_rgb(std::sin(tcount));
-        double g = magic_rgb(std::cos(tcount));
-        double b = magic_rgb(r*g);
-        double a = magic_rgb(b);
-        glClearColor(r,g,b,a);
+        glClearColor(0,0,0,1.0);
         glUseProgram(0);
     }
 
@@ -495,7 +252,6 @@ public:
     inline static void start(const char *name, int w, int h){
         Time::init();
         Py_Initialize();
-        PyRun_SimpleString("Python init.");
         if (!glfwInit()){
             std::cout << "Could not create window!\n";
             cleanup();
@@ -573,8 +329,6 @@ public:
 
         // Run main loop
         mainLoop();
-
-        Py_Finalize();
     }
 private:
     inline static GLFWwindow* window;
@@ -644,14 +398,10 @@ private:
     }
 
     inline static void initialize(){
-        std::unique_ptr<Scene> scene0(new SceneStart);
-        std::unique_ptr<Scene> scene1(new SceneConchoid);
-        std::unique_ptr<Scene> scene2(new SceneSphere);
+        std::unique_ptr<Scene> scene(new SceneRTSh);
 
-        add_scene(scene0);
-        add_scene(scene1);
-        add_scene(scene2);
-
+        add_scene(scene);
+        
         //vao
         GLuint vao;
         GLuint positionsVBO;
@@ -703,6 +453,7 @@ private:
     }
 
     inline static void cleanup(){
+        Py_Finalize();
         glfwDestroyWindow(window);
         glfwTerminate();
         sceneList.clear();

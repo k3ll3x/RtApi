@@ -40,8 +40,10 @@ float pi = 3.14159;
 
 void main(){
 	vec3 origin = vec3(0.0,0.0,0.0);
+	//vec3 origin = vec3(mox,-moy,0.0);
 
-	float i = mod(id, 9*pi);
+	//float i = mod(id, 9*pi);
+	float i = mod(id, psz*pi);
 	// float i = mod(id, psz*pi);
 	// float i = mod(id, time*pi);
 	float r = sin(i)*0.9;
@@ -55,8 +57,9 @@ void main(){
 	
 	float o = 1.0;
 	float c = mod((theta/pi)-(time/3), o);
-	vec3 color = vec3(c-mox,c-moy,c);
-	vec3 pos = vec3(origin.x + x, origin.y + y, origin.z + z) * rotationX(pi/2.3);
+	vec3 color = vec3(c-mox*cos(psz-time),c-moy,sin(psz+time)*c);
+	//vec3 pos = vec3(origin.x + x, origin.y + y, origin.z + z) * rotationX(pi/2.3);
+	vec3 pos = vec3(origin.x + x, origin.y + y, origin.z + z) * rotationX(mox*pi) * rotationY(moy*pi);
 
 	gl_Position = vec4(pos,1.0);
 	InterpolatedColor = vec4(color,1.0);
